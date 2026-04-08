@@ -29,7 +29,11 @@ const ElementRenderer = ({ element, disableLinks }) => {
     <div style={style} className="preview-element">
       {element.content?.map((item, i) => {
         if (item.type === 'text') return <span key={i}>{item.value}</span>;
+        if (item.type === 'strong') return <strong key={i} className="preview-strong">{item.value}</strong>;
+        if (item.type === 'muted') return <span key={i} className="preview-muted">{item.value}</span>;
+        if (item.type === 'badge') return <span key={i} className="preview-badge">{item.value}</span>;
         if (item.type === 'dot') return <span key={i} className="dot">•</span>;
+        if (item.type === 'pipe') return <span key={i} className="preview-pipe">|</span>;
         return null;
       })}
     </div>
@@ -66,15 +70,26 @@ export const Preview = ({ parsedJson, disableLinks = false }) => {
   return (
     <div className="preview-content">
       {groupedLines.map((lineGroup, index) => {
-        // 2. If a line has multiple elements, wrap them in a flex container.
+        const lineLayout = lineGroup.find((element) => element.layout)?.layout || 'between';
+        const lineGap = lineGroup.find((element) => element.gap)?.gap || '0';
+        const justifyContentMap = {
+          start: 'flex-start',
+          center: 'center',
+          end: 'flex-end',
+          between: 'space-between',
+          around: 'space-around',
+        };
+
         if (lineGroup.length > 1) {
           return (
             <div
               key={index}
               style={{
                 display: 'flex',
-                justifyContent: 'space-between', // Pushes items to opposite ends
-                alignItems: 'baseline', // Aligns text nicely
+                justifyContent: justifyContentMap[lineLayout] || 'space-between',
+                alignItems: 'baseline',
+                gap: /^\d+$/.test(String(lineGap)) ? `${lineGap}px` : lineGap,
+                flexWrap: 'wrap',
               }}
             >
               {lineGroup.map((element, elIndex) => (
@@ -312,7 +327,7 @@ export const Editor = ({ code, setCode }) => {
     let highlightedText = escapedText
       .replace(/"(.*?)"/g, '<span class="string">"$1"</span>') // Strings
       .replace(/\b(start|end|startFromSameLine)\b/g, '<span class="keyword-block">$1</span>') // Block keywords
-      .replace(/\b(declare|init|set|write|design|set_url|draw|add)\b/g, '<span class="keyword-command">$1</span>')
+      .replace(/\b(declare|init|set|write|strong|muted|badge|design|set_url|draw|add|layout|gap|align)\b/g, '<span class="keyword-command">$1</span>')
       .replace(/\$[A-Za-z_][A-Za-z0-9_]*/g, '<span class="variable-token">$&</span>');
 
     // Add extra newline at the end if the text ends with one, to keep scroll synchronized
@@ -396,6 +411,27 @@ export const Editor = ({ code, setCode }) => {
         }
         .variable-token {
           color: #67e8f9;
+        }
+        .preview-strong {
+          font-weight: 700;
+        }
+        .preview-muted {
+          color: #64748b;
+        }
+        .preview-badge {
+          display: inline-block;
+          padding: 4px 10px;
+          margin-right: 8px;
+          margin-bottom: 6px;
+          border-radius: 999px;
+          background: #e2e8f0;
+          color: #0f172a;
+          font-size: 12px;
+          font-weight: 600;
+        }
+        .preview-pipe {
+          color: #94a3b8;
+          margin: 0 8px;
         }
       `}</style>
       <div className="code-editor-container">

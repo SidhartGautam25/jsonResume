@@ -48,11 +48,21 @@ const interpolateVariables = (value, variables) =>
 const resolveValue = (rawValue, variables) =>
   interpolateVariables(stripWrappingQuotes(rawValue), variables);
 
+const createElement = (blockType) => ({
+  type: 'div',
+  content: [],
+  styles: {},
+  isInline: blockType === 'startFromSameLine',
+  url: null,
+  layout: null,
+  gap: null,
+});
+
 export const parseCodeToJson = (code) => {
   const { variables, codeWithoutDeclarations } = collectDeclaredVariables(code);
 
   const blocks = codeWithoutDeclarations
-    .split(/(?=start|startFromSameLine)/g)
+    .split(/(?=startFromSameLine|start)/g)
     .filter((block) => block.trim() !== '');
 
   const jsonOutput = {
@@ -77,13 +87,7 @@ export const parseCodeToJson = (code) => {
 
     if (lines[lines.length - 1] !== 'end') return;
 
-    const element = {
-      type: 'div',
-      content: [],
-      styles: {},
-      isInline: blockType === 'startFromSameLine',
-      url: null,
-    };
+    const element = createElement(blockType);
 
     if (commands.length > 0 && commands[0].startsWith('init')) {
       const parts = commands[0].split(' ');
@@ -121,6 +125,15 @@ export const parseCodeToJson = (code) => {
         case 'write':
           element.content.push({ type: 'text', value: args });
           break;
+        case 'strong':
+          element.content.push({ type: 'strong', value: args });
+          break;
+        case 'muted':
+          element.content.push({ type: 'muted', value: args });
+          break;
+        case 'badge':
+          element.content.push({ type: 'badge', value: args });
+          break;
         case 'draw':
           if (args === 'line') {
             element.type = 'hr';
@@ -129,6 +142,9 @@ export const parseCodeToJson = (code) => {
         case 'add':
           if (args === 'dot') {
             element.content.push({ type: 'dot' });
+          }
+          if (args === 'pipe') {
+            element.content.push({ type: 'pipe' });
           }
           break;
         case 'set': {
@@ -142,6 +158,15 @@ export const parseCodeToJson = (code) => {
           break;
         case 'set_url':
           element.url = args;
+          break;
+        case 'layout':
+          element.layout = args;
+          break;
+        case 'gap':
+          element.gap = args;
+          break;
+        case 'align':
+          element.styles.align = args;
           break;
         default:
           break;

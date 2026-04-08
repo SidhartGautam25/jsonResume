@@ -5,22 +5,26 @@ const syntaxCards = [
   {
     title: "Variables",
     code: `declare fullName="Sidharth G"
-declare role="Frontend Engineer"
-declare portfolio="https://example.com"`,
+declare title="Senior Frontend Engineer"
+declare portfolioUrl="https://example.com"`,
   },
   {
-    title: "Reusable styles",
+    title: "Layout primitives",
     code: `start
-init sectionTitle
-set size "18"
-set color "#0f172a"
+muted "$email"
+layout "start"
+gap "14"
+end
+
+startFromSameLine
+muted "$phone"
 end`,
   },
   {
-    title: "Rendering content",
+    title: "Richer elements",
     code: `start
-write "$fullName"
-design sectionTitle
+strong "Northstar Labs"
+badge "Remote"
 end`,
   },
 ];
@@ -35,8 +39,8 @@ export default function DocsPage() {
           <p className="eyebrow">Documentation</p>
           <h1 className="hero-title hero-title-docs">Build resumes with readable code</h1>
           <p className="hero-copy">
-            codeResume uses a compact DSL for resume layout, reusable styles, and now global variables
-            through the <code>declare</code> syntax.
+            codeResume stays block-first and now supports stronger layout primitives plus richer
+            resume-friendly elements, while keeping the original syntax intact.
           </p>
         </section>
 
@@ -62,11 +66,11 @@ export default function DocsPage() {
             </div>
             <div className="docs-row">
               <strong>startFromSameLine</strong>
-              <span>Render a block inline with the previous line group.</span>
+              <span>Attach the current block to the same line group as the block above it.</span>
             </div>
             <div className="docs-row">
               <strong>init</strong>
-              <span>Create reusable style presets like headers, links, and section titles.</span>
+              <span>Create reusable style presets like headers, meta text, and section titles.</span>
             </div>
             <div className="docs-row">
               <strong>design</strong>
@@ -74,11 +78,42 @@ export default function DocsPage() {
             </div>
             <div className="docs-row">
               <strong>write</strong>
-              <span>Add text content to the current block.</span>
+              <span>Render normal body text.</span>
+            </div>
+            <div className="docs-row">
+              <strong>strong</strong>
+              <span>Render emphasized text for titles, roles, or company names.</span>
+            </div>
+            <div className="docs-row">
+              <strong>muted</strong>
+              <span>Render secondary text for metadata like dates, location, or links.</span>
+            </div>
+            <div className="docs-row">
+              <strong>badge</strong>
+              <span>Render a pill-style skill or tag element.</span>
+            </div>
+            <div className="docs-row">
+              <strong>layout</strong>
+              <span>
+                Control same-line distribution with <code>start</code>, <code>center</code>,
+                <code> end</code>, <code>between</code>, or <code>around</code>.
+              </span>
+            </div>
+            <div className="docs-row">
+              <strong>gap</strong>
+              <span>Add spacing between items on the same line.</span>
+            </div>
+            <div className="docs-row">
+              <strong>align</strong>
+              <span>Control text alignment inside a block.</span>
             </div>
             <div className="docs-row">
               <strong>set</strong>
-              <span>Override spacing, size, color, and other style properties for a block.</span>
+              <span>
+                Override styles like <code>size</code>, <code>color</code>, <code>fontWeight</code>,
+                <code> lineHeight</code>, <code>letterSpacing</code>, <code>transform</code>,
+                <code> width</code>, and spacing values.
+              </span>
             </div>
             <div className="docs-row">
               <strong>set_url</strong>
@@ -90,42 +125,76 @@ export default function DocsPage() {
             </div>
             <div className="docs-row">
               <strong><code>add &quot;dot&quot;</code></strong>
-              <span>Insert a bullet marker for list-style lines.</span>
+              <span>Insert a bullet marker for highlights.</span>
+            </div>
+            <div className="docs-row">
+              <strong><code>add &quot;pipe&quot;</code></strong>
+              <span>Insert a simple pipe separator in inline content.</span>
             </div>
           </div>
         </section>
 
         <section className="docs-section">
-          <h2>Example</h2>
-          <pre className="docs-example">{`declare fullName="Sidharth G"
-declare title="Lead Software Engineer"
+          <h2>Professional header example</h2>
+          <pre className="docs-example">{`declare fullName="Sidharth Gupta"
+declare email="sidharth@example.com"
+declare phone="+91 98765 43210"
 declare portfolioLabel="Portfolio"
-declare portfolioUrl="https://yoursite.com"
+declare portfolioUrl="https://sidharth.dev"
 
 start
 write "$fullName"
-design header
+design heroName
 end
 
 start
-write "$title"
-set color "#64748b"
+muted "$email"
+layout "start"
+gap "14"
+end
+
+startFromSameLine
+muted "$phone"
 end
 
 startFromSameLine
 write "$portfolioLabel"
-design linkStyle
 set_url "$portfolioUrl"
+end`}</pre>
+        </section>
+
+        <section className="docs-section">
+          <h2>Experience row example</h2>
+          <pre className="docs-example">{`start
+strong "Senior Frontend Engineer"
+design itemTitle
+end
+
+startFromSameLine
+strong "Northstar Labs"
+design itemTitle
+layout "between"
+end
+
+start
+muted "Remote"
+design meta
+end
+
+startFromSameLine
+muted "2022 - Present"
+design meta
+layout "between"
 end`}</pre>
         </section>
 
         <section className="docs-section docs-cta">
           <div>
-            <h2>Start building</h2>
-            <p>Open the editor and use the full template as a working reference.</p>
+            <h2>Start with a full template</h2>
+            <p>Open the Professional, Executive, or ATS Pro templates to see the newer layout and content primitives in action.</p>
           </div>
-          <Link href="/editor?template=full" className="primary-link">
-            Launch the Builder
+          <Link href="/editor?template=professional" className="primary-link">
+            Launch Professional Template
           </Link>
         </section>
       </div>
