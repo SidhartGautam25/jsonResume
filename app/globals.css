@@ -1,26 +1,253 @@
-@import "tailwindcss";
-
+/* === Page & layout === */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --outer-dark: #0f172a;
+  --panel-dark: #1e293b;
+  --code-bg: #020617;
+  --code-green: #38bdf8;
+  --title-green: #38bdf8;
+  --paper-bg: #ffffff;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.app-root {
+  background: var(--outer-dark);
+  color: #d9e0e6;
+  min-height: 100vh;
+  padding: 24px 32px;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* container extends width edge-to-edge for 50/50 split */
+.container {
+  width: 100%;
+  max-width: 1800px; /* high upper margin for ultrawides */
+  margin: 0 auto;
+}
+
+/* header */
+.header { text-align: center; margin-bottom: 24px; }
+.title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--title-green);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+.subtitle {
+  color: #94a3b8;
+  margin-top: 4px;
+  font-size: 14px;
+}
+
+/* grid: two columns explicitly 50% / 50% */
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: stretch; 
+  height: calc(100vh - 130px); /* Dynamic height stretching full viewport */
+}
+
+/* panels */
+.panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-dark);
+  border-radius: 16px;
+  padding: 20px;
+  height: 100%;
+  min-height: 0; 
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+/* left panel specifics */
+.panel-left { padding-bottom: 24px; }
+
+/* editor-wrap */
+.editor-wrap {
+  flex: 1 1 auto;
+  min-height: 0; 
+  overflow: auto;
+  margin-bottom: 16px;
+  border-radius: 8px;
+}
+
+/* code area (textarea) */
+.code-area {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  background: var(--code-bg);
+  color: var(--code-green);
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 20px;
+  border-radius: 8px;
+  resize: none;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  overflow: auto;
+}
+
+/* compile button */
+.compile-btn {
+  position: sticky;
+  bottom: 20px;
+  width: 100%;
+  background: #0284c7;  /* modern blue matching syntax */
+  color: white;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 16px;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+}
+.compile-btn:hover { 
+  background: #0369a1; 
+  transform: translateY(-1px);
+}
+.compile-btn:active {
+  transform: translateY(1px);
+}
+
+/* right panel 'paper' look */
+.panel-right {
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* white inner paper that scrolls */
+.paper {
+  background: var(--paper-bg);
+  border-radius: 8px;
+  height: 100%;
+  padding: 18px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.45);
+  overflow: auto;
+  border: 2px solid rgba(0,0,0,0.05);
+}
+
+/* preview content inside the white paper */
+.preview-content {
+  color: #111827;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* empty preview placeholder */
+.preview-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #9aa6ae;
+}
+
+/* small element styling */
+.preview-content hr { margin: 10px 0; border: none; border-bottom: 2px solid #000; }
+.preview-content ul { padding-left: 22px; margin: 6px 0; }
+.preview-element .dot { margin-right: 8px; font-weight: 700; }
+
+/* scrollbar styling for WebKit browsers */
+.code-area::-webkit-scrollbar, .paper::-webkit-scrollbar {
+  width: 12px;
+  height: 10px;
+}
+.code-area::-webkit-scrollbar-thumb, .paper::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.35);
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+.code-area::-webkit-scrollbar-track, .paper::-webkit-scrollbar-track {
+  background: rgba(255,255,255,0.03);
+}
+
+/* responsive: single column on smaller screens */
+@media (max-width: 900px) {
+  .grid { grid-template-columns: 1fr; height: auto; }
+  .panel { height: auto; }
+  .compile-btn { position: relative; bottom: auto; margin-top: 6px; }
+}
+
+/* --- HOME PAGE GALLERY --- */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 32px;
+  padding-bottom: 60px;
+}
+
+.gallery-card {
+  background: var(--panel-dark);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+  transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+  cursor: pointer;
+  border: 2px solid rgba(255,255,255,0.05);
+  display: flex;
+  flex-direction: column;
+}
+
+.gallery-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+  border-color: var(--code-green);
+}
+
+.gallery-thumbnail-wrap {
+  width: 100%;
+  aspect-ratio: 1 / 1.1;
+  overflow: hidden;
+  background: var(--paper-bg);
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.gallery-thumbnail {
+  width: 300%;
+  height: 300%;
+  transform: scale(0.33);
+  transform-origin: top left;
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 30px;
+  background: var(--paper-bg);
+  pointer-events: none;
+}
+
+.gallery-card-footer {
+  padding: 24px;
+  background: var(--panel-dark);
+}
+
+.gallery-card-footer h3 {
+  margin: 0 0 8px 0;
+  font-size: 22px;
+  color: var(--title-green);
+  font-weight: 800;
+}
+
+.gallery-card-footer p {
+  margin: 0;
+  font-size: 15px;
+  color: #94a3b8;
 }

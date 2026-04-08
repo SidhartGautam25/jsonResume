@@ -1,0 +1,283 @@
+export const templates = {
+  full: `start
+init global
+set spaceFromLeft "5"
+set size "14"
+set color "#333333"
+end
+
+start
+init header
+set size "32"
+set color "#0f172a"
+set weight "4"
+set spaceFromTop "10"
+set spaceFromBottom "5"
+set spaceFromLeft "0"
+end
+
+start
+init section
+set size "18"
+set color "#38bdf8"
+set spaceFromTop "20"
+set spaceFromBottom "8"
+set spaceFromLeft "0"
+end
+
+start
+init linkStyle
+set color "#2563eb"
+set size "12"
+end
+
+start
+write "SIDHARTH G"
+design header
+end
+
+startFromSameLine
+write "Portfolio"
+design linkStyle
+set spaceFromLeft "40"
+set_url "https://yoursite.com"
+end
+
+start
+write "Lead Software Engineer | Web Architect"
+set color "#64748b"
+set size "14"
+set spaceFromBottom "15"
+set spaceFromLeft "0"
+end
+
+start
+draw "line"
+set weight "2"
+set color "#e2e8f0"
+set spaceFromLeft "0"
+set spaceFromRight "0"
+end
+
+start
+write "SKILLS"
+design section
+end
+
+start
+add "dot"
+write "Languages: JavaScript, TypeScript, Python, C++"
+end
+
+start
+add "dot"
+write "Frameworks: React, Next.js, Node.js, Express, Django"
+end
+
+start
+add "dot"
+write "DevOps & Cloud: Docker, Kubernetes, AWS, Vercel"
+end
+
+start
+write "WORK EXPERIENCE"
+design section
+end
+
+start
+add "dot"
+write "Senior Web Developer"
+set size "15"
+set color "#000000"
+end
+
+startFromSameLine
+write "Tech Innovations Inc. (2022 - Present)"
+set color "#64748b"
+set spaceFromLeft "15"
+end
+
+start
+write "Spearheaded the migration of monolithic architecture to microservices using Node.js and Docker."
+set spaceFromLeft "15"
+set spaceFromTop "5"
+end
+
+start
+write "Mentored a team of 5 junior developers, establishing modern React best practices."
+set spaceFromLeft "15"
+end
+
+start
+add "dot"
+write "Frontend Engineer"
+set size "15"
+set color "#000000"
+set spaceFromTop "10"
+end
+
+startFromSameLine
+write "StartupX (2020 - 2022)"
+set color "#64748b"
+set spaceFromLeft "15"
+end
+
+start
+write "Designed and implemented a high-conversion landing page resulting in 40% increased user retention."
+set spaceFromLeft "15"
+set spaceFromTop "5"
+end
+
+start
+write "PROJECTS"
+design section
+end
+
+start
+add "dot"
+write "CodeResume Builder"
+set size "15"
+set color "#000000"
+end
+
+startFromSameLine
+write "Live Demo"
+design linkStyle
+set spaceFromLeft "15"
+set_url "https://example.com"
+end
+
+start
+write "A custom scripting language parser built with Next.js mapping text commands to visual resume components."
+set spaceFromLeft "15"
+set spaceFromTop "5"
+end
+
+start
+draw "line"
+set weight "1"
+set color "#e2e8f0"
+set spaceFromTop "30"
+set spaceFromLeft "0"
+set spaceFromRight "0"
+end`,
+  minimal: `start
+init global
+set spaceFromLeft "10"
+set size "12"
+set color "#4b5563"
+end
+
+start
+init big
+set size "28"
+set color "#1f2937"
+set spaceFromTop "10"
+set spaceFromBottom "2"
+end
+
+start
+init section
+set size "14"
+set color "#1f2937"
+set spaceFromTop "30"
+set spaceFromBottom "10"
+end
+
+start
+write "JANE DOE"
+design big
+end
+
+start
+write "Minimalist Engineer"
+set color "#9ca3af"
+set spaceFromBottom "20"
+end
+
+start
+write "EXPERIENCE"
+design section
+end
+
+start
+write "Software Developer // Apple Inc // 2018 - 2024"
+set color "#4b5563"
+end
+
+start
+write "Built core operating system components."
+set spaceFromLeft "20"
+set spaceFromTop "5"
+end
+
+start
+write "EDUCATION"
+design section
+end
+
+start
+write "Computer Science, Stanford University"
+set color "#4b5563"
+end`,
+  creative: `start
+init global
+set spaceFromLeft "5"
+set size "16"
+set color "#000000"
+end
+
+start
+init fancy
+set size "40"
+set color "#ec4899"
+set spaceFromTop "20"
+set spaceFromBottom "10"
+end
+
+start
+init box
+set color "#8b5cf6"
+set size "20"
+set spaceFromTop "15"
+set spaceFromBottom "10"
+end
+
+start
+write "ALEX CHEN"
+design fancy
+end
+
+start
+draw "line"
+set weight "5"
+set color "#ec4899"
+end
+
+start
+write "Creative Technologist • Designer • Thinker"
+set color "#6366f1"
+set spaceFromTop "10"
+set spaceFromBottom "20"
+end
+
+start
+write "WHAT I DO"
+design box
+end
+
+start
+add "dot"
+write "Frontend Magic"
+end
+
+start
+add "dot"
+write "Visual Interfaces"
+end
+
+start
+add "dot"
+write "Interactions Design"
+end`
+};
