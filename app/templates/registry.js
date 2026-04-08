@@ -1,5 +1,12 @@
 export const templates = {
-  full: `start
+  full: `declare fullName="SIDHARTH G"
+declare role="Lead Software Engineer | Web Architect"
+declare portfolioLabel="Portfolio"
+declare portfolioUrl="https://yoursite.com"
+declare demoLabel="Live Demo"
+declare demoUrl="https://example.com"
+
+start
 init global
 set spaceFromLeft "5"
 set size "14"
@@ -32,19 +39,19 @@ set size "12"
 end
 
 start
-write "SIDHARTH G"
+write "$fullName"
 design header
 end
 
 startFromSameLine
-write "Portfolio"
+write "$portfolioLabel"
 design linkStyle
 set spaceFromLeft "40"
-set_url "https://yoursite.com"
+set_url "$portfolioUrl"
 end
 
 start
-write "Lead Software Engineer | Web Architect"
+write "$role"
 set color "#64748b"
 set size "14"
 set spaceFromBottom "15"
@@ -141,10 +148,10 @@ set color "#000000"
 end
 
 startFromSameLine
-write "Live Demo"
+write "$demoLabel"
 design linkStyle
 set spaceFromLeft "15"
-set_url "https://example.com"
+set_url "$demoUrl"
 end
 
 start
@@ -161,7 +168,10 @@ set spaceFromTop "30"
 set spaceFromLeft "0"
 set spaceFromRight "0"
 end`,
-  minimal: `start
+  minimal: `declare fullName="JANE DOE"
+declare title="Minimalist Engineer"
+
+start
 init global
 set spaceFromLeft "10"
 set size "12"
@@ -185,12 +195,12 @@ set spaceFromBottom "10"
 end
 
 start
-write "JANE DOE"
+write "$fullName"
 design big
 end
 
 start
-write "Minimalist Engineer"
+write "$title"
 set color "#9ca3af"
 set spaceFromBottom "20"
 end
@@ -220,7 +230,10 @@ start
 write "Computer Science, Stanford University"
 set color "#4b5563"
 end`,
-  creative: `start
+  creative: `declare fullName="ALEX CHEN"
+declare tagline="Creative Technologist • Designer • Thinker"
+
+start
 init global
 set spaceFromLeft "5"
 set size "16"
@@ -244,7 +257,7 @@ set spaceFromBottom "10"
 end
 
 start
-write "ALEX CHEN"
+write "$fullName"
 design fancy
 end
 
@@ -255,7 +268,7 @@ set color "#ec4899"
 end
 
 start
-write "Creative Technologist • Designer • Thinker"
+write "$tagline"
 set color "#6366f1"
 set spaceFromTop "10"
 set spaceFromBottom "20"
@@ -279,5 +292,5 @@ end
 start
 add "dot"
 write "Interactions Design"
-end`
+end`,
 };

@@ -1,38 +1,32 @@
 'use client'
-import { useEffect, useState, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useSearchParams } from 'next/navigation';
 import { Editor, Preview } from "../comp/preview";
 import { parseCodeToJson } from '../utils/jsonParsing';
 import { templates } from '../templates/registry';
-import Link from 'next/link';
+import { SiteHeader } from "../comp/site-header";
 
 function EditorContent() {
   const searchParams = useSearchParams();
   const templateKey = searchParams.get('template') || 'full';
   
   const initialCode = templates[templateKey as keyof typeof templates] || templates['full'];
+  const initialParsedJson = parseCodeToJson(initialCode);
 
   const [code, setCode] = useState(initialCode);
-  const [parsedJson, setParsedJson] = useState<any>(() => parseCodeToJson(initialCode));
+  const [parsedJson, setParsedJson] = useState(initialParsedJson);
 
   const handleCompile = () => {
-    const res: any = parseCodeToJson(code);
+    const res = parseCodeToJson(code);
     setParsedJson(res);
   };
 
   return (
     <div className="app-root">
       <div className="container">
-        <nav className="navbar" style={{ marginBottom: '24px' }}>
-          <Link href="/" className="nav-brand">
-            codeResume
-          </Link>
-          <div className="nav-links">
-            <Link href="/" className="nav-link">
-              ← Back to Templates
-            </Link>
-          </div>
-        </nav>
+        <div style={{ marginBottom: '24px' }}>
+          <SiteHeader showLaunchButton={false} />
+        </div>
 
         <div className="grid">
           {/* LEFT - Editor panel */}

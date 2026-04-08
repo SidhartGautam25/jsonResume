@@ -1,5 +1,5 @@
 'use client'
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 // import { convertToReactStyles } from "../../../codeResume/client/src/utils/design";
 import { convertToReactStyles } from "../utils/design";
 
@@ -312,7 +312,8 @@ export const Editor = ({ code, setCode }) => {
     let highlightedText = escapedText
       .replace(/"(.*?)"/g, '<span class="string">"$1"</span>') // Strings
       .replace(/\b(start|end|startFromSameLine)\b/g, '<span class="keyword-block">$1</span>') // Block keywords
-      .replace(/\b(init|set|write|design|set_url|draw|add)\b/g, '<span class="keyword-command">$1</span>'); // Command keywords
+      .replace(/\b(declare|init|set|write|design|set_url|draw|add)\b/g, '<span class="keyword-command">$1</span>')
+      .replace(/\$[A-Za-z_][A-Za-z0-9_]*/g, '<span class="variable-token">$&</span>');
 
     // Add extra newline at the end if the text ends with one, to keep scroll synchronized
     return highlightedText + (text.endsWith('\n') ? ' ' : '');
@@ -392,6 +393,9 @@ export const Editor = ({ code, setCode }) => {
         }
         .string {
           color: #90cdf4; /* A light blue for strings */
+        }
+        .variable-token {
+          color: #67e8f9;
         }
       `}</style>
       <div className="code-editor-container">
