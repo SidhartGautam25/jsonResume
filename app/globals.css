@@ -183,6 +183,43 @@ html, body {
   .compile-btn { position: relative; bottom: auto; margin-top: 6px; }
 }
 
+/* --- NAVBAR --- */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  background: var(--panel-dark);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.nav-brand {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--title-green);
+  text-decoration: none;
+  letter-spacing: -0.5px;
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+}
+
+.nav-link {
+  color: #94a3b8;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  transition: color 0.2s;
+}
+
+.nav-link:hover {
+  color: var(--code-green);
+}
+
 /* --- HOME PAGE GALLERY --- */
 .gallery-grid {
   display: grid;

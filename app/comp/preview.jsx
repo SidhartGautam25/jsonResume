@@ -7,7 +7,7 @@ import { convertToReactStyles } from "../utils/design";
  * A helper component to render a single element.
  * This avoids code duplication and makes the main component cleaner.
  */
-const ElementRenderer = ({ element }) => {
+const ElementRenderer = ({ element, disableLinks }) => {
   const style = convertToReactStyles(element.styles || {});
 
   // Handle HR tags separately
@@ -35,15 +35,15 @@ const ElementRenderer = ({ element }) => {
     </div>
   );
 
-  // If the element has a URL, wrap it in an anchor tag
-  if (element.url) {
+  // If the element has a URL, wrap it in an anchor tag unless disabled
+  if (element.url && !disableLinks) {
     return <a href={element.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>{content}</a>;
   }
 
   return content;
 };
 
-export const Preview = ({ parsedJson }) => {
+export const Preview = ({ parsedJson, disableLinks = false }) => {
   if (!parsedJson || !parsedJson.elements || parsedJson.elements.length === 0) {
     return (
       <div className="preview-empty">
@@ -78,7 +78,7 @@ export const Preview = ({ parsedJson }) => {
               }}
             >
               {lineGroup.map((element, elIndex) => (
-                <ElementRenderer key={elIndex} element={element} />
+                <ElementRenderer key={elIndex} element={element} disableLinks={disableLinks} />
               ))}
             </div>
           );
@@ -86,7 +86,7 @@ export const Preview = ({ parsedJson }) => {
 
         // 3. If it's a normal single-element line, render it directly.
         const singleElement = lineGroup[0];
-        return <ElementRenderer key={index} element={singleElement} />;
+        return <ElementRenderer key={index} element={singleElement} disableLinks={disableLinks} />;
       })}
     </div>
   );
@@ -301,7 +301,6 @@ export const Preview = ({ parsedJson }) => {
 
 
 export const Editor = ({ code, setCode }) => {
-  const editorRef = useRef(null);
 
   const highlightSyntax = (text) => {
     // Escape HTML to prevent injection before applying spans
@@ -315,91 +314,75 @@ export const Editor = ({ code, setCode }) => {
       .replace(/\b(start|end|startFromSameLine)\b/g, '<span class="keyword-block">$1</span>') // Block keywords
       .replace(/\b(init|set|write|design|set_url|draw|add)\b/g, '<span class="keyword-command">$1</span>'); // Command keywords
 
-    return highlightedText.replace(/\n/g, '<br/>');
+    // Add extra newline at the end if the text ends with one, to keep scroll synchronized
+    return highlightedText + (text.endsWith('\n') ? ' ' : '');
   };
 
-  const handleInput = (e) => {
-    setCode(e.currentTarget.innerText);
-  };
-
-  // This effect synchronizes the div content with the state,
-  // handling updates from typing and pasting while preserving cursor position.
-  useEffect(() => {
-    if (editorRef.current) {
-      // --- Save Cursor Position ---
-      const selection = window.getSelection();
-      const range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
-      let charCount = -1;
-
-      // Only save the cursor position if it's inside the editor
-      if (range && editorRef.current.contains(range.startContainer)) {
-        const preCaretRange = range.cloneRange();
-        preCaretRange.selectNodeContents(editorRef.current);
-        preCaretRange.setEnd(range.endContainer, range.endOffset);
-        charCount = preCaretRange.toString().length;
-      }
-
-      // --- Update Content ---
-      editorRef.current.innerHTML = highlightSyntax(code);
-
-      // --- Restore Cursor Position ---
-      if (charCount !== -1) {
-        let newRange = document.createRange();
-        let charCounter = 0;
-        let found = false;
-
-        const findNodeAndOffset = (node) => {
-          if (found) return;
-          if (node.nodeType === Node.TEXT_NODE) {
-            const nextCharCounter = charCounter + node.length;
-            if (charCount <= nextCharCounter) {
-              // Use Math.min to prevent errors if charCount is slightly off
-              newRange.setStart(node, Math.min(node.length, charCount - charCounter));
-              newRange.collapse(true);
-              found = true;
-            } else {
-              charCounter = nextCharCounter;
-            }
-          } else {
-            for (const child of node.childNodes) {
-              findNodeAndOffset(child);
-            }
-          }
-        };
-
-        findNodeAndOffset(editorRef.current);
-
-        if (found) {
-          selection.removeAllRanges();
-          selection.addRange(newRange);
-        }
-      }
+  const syncScroll = (e) => {
+    const textarea = e.target;
+    const pre = textarea.nextElementSibling;
+    if (pre) {
+      pre.scrollTop = textarea.scrollTop;
+      pre.scrollLeft = textarea.scrollLeft;
     }
-  }, [code]);
+  };
 
   return (
     <>
       <style>{`
-        .code-editor {
+        .code-editor-container {
+          position: relative;
           width: 100%;
           height: 100%;
-          min-height: 0;
-          background: #1a202c; /* bg-gray-900 */
-          color: #f6ad55; /* Light yellowish orange */
-          border: 2px solid #4a5568; /* border-gray-700 */
-          padding: 1rem;
           border-radius: 0.5rem;
-          resize: none;
+          background: #1a202c; /* bg-gray-900 */
+          border: 2px solid #4a5568; /* border-gray-700 */
+          overflow: hidden;
+        }
+
+        .code-editor-container:focus-within {
+          border-color: #48bb78; /* focus:border-green-500 */
+        }
+
+        .code-editor-textarea,
+        .code-editor-highlight {
+          margin: 0;
+          border: 0;
+          background: none;
+          box-sizing: border-box;
           font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
           font-size: 14px;
           line-height: 1.5;
+          padding: 1rem;
+          width: 100%;
+          height: 100%;
+          white-space: pre-wrap;
+          word-wrap: break-word;
           overflow: auto;
-          white-space: pre-wrap; /* Allows wrapping and preserves spaces */
         }
-        .code-editor:focus {
+
+        .code-editor-textarea {
+          position: absolute;
+          top: 0;
+          left: 0;
+          color: transparent;
+          caret-color: #f6ad55;
+          z-index: 1;
+          resize: none;
+        }
+
+        .code-editor-textarea:focus {
           outline: none;
-          border-color: #48bb78; /* focus:border-green-500 */
         }
+
+        .code-editor-highlight {
+          position: absolute;
+          top: 0;
+          left: 0;
+          pointer-events: none;
+          color: #f6ad55;
+        }
+
         .keyword-block {
           color: white;
           font-weight: bold;
@@ -411,13 +394,20 @@ export const Editor = ({ code, setCode }) => {
           color: #90cdf4; /* A light blue for strings */
         }
       `}</style>
-      <div
-        ref={editorRef}
-        contentEditable={true}
-        onInput={handleInput}
-        className="code-editor"
-        spellCheck="false"
-      />
+      <div className="code-editor-container">
+        <textarea
+          className="code-editor-textarea"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          onScroll={syncScroll}
+          spellCheck="false"
+        />
+        <pre
+          className="code-editor-highlight"
+          aria-hidden="true"
+          dangerouslySetInnerHTML={{ __html: highlightSyntax(code) }}
+        />
+      </div>
     </>
   );
 };

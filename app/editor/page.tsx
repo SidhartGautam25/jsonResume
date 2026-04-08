@@ -13,7 +13,7 @@ function EditorContent() {
   const initialCode = templates[templateKey as keyof typeof templates] || templates['full'];
 
   const [code, setCode] = useState(initialCode);
-  const [parsedJson, setParsedJson] = useState<any>(null);
+  const [parsedJson, setParsedJson] = useState<any>(() => parseCodeToJson(initialCode));
 
   const handleCompile = () => {
     const res: any = parseCodeToJson(code);
@@ -23,14 +23,16 @@ function EditorContent() {
   return (
     <div className="app-root">
       <div className="container">
-        <header className="header">
-          <Link href="/" style={{ textDecoration: 'none' }}>
-            <h1 className="title" style={{ cursor: 'pointer' }}>codeResume</h1>
+        <nav className="navbar" style={{ marginBottom: '24px' }}>
+          <Link href="/" className="nav-brand">
+            codeResume
           </Link>
-          <p className="subtitle">
-            Editing Template: {templateKey}
-          </p>
-        </header>
+          <div className="nav-links">
+            <Link href="/" className="nav-link">
+              ← Back to Templates
+            </Link>
+          </div>
+        </nav>
 
         <div className="grid">
           {/* LEFT - Editor panel */}

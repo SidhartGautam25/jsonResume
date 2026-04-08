@@ -32,7 +32,7 @@ export default function Home() {
                  <div className="gallery-card">
                    <div className="gallery-thumbnail-wrap">
                      <div className="gallery-thumbnail">
-                        <Preview parsedJson={parsedRes} />
+                        <Preview parsedJson={parsedRes} disableLinks={true} />
                      </div>
                    </div>
                    <div className="gallery-card-footer">
