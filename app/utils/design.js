@@ -1,3 +1,5 @@
+const pixelOrRaw = (value) => (/^\d+(\.\d+)?$/.test(String(value)) ? `${value}px` : value);
+
 export const convertToReactStyles = (styles) => {
   const reactStyles = {};
   if (!styles) return reactStyles;
@@ -22,6 +24,9 @@ export const convertToReactStyles = (styles) => {
       case 'transform':
         reactStyles.textTransform = value;
         break;
+      case 'decoration':
+        reactStyles.textDecoration = value;
+        break;
       case 'spaceFromTop':
         reactStyles.marginTop = `${value}px`;
         break;
@@ -35,10 +40,10 @@ export const convertToReactStyles = (styles) => {
         reactStyles.marginRight = `${value}px`;
         break;
       case 'width':
-        reactStyles.width = /^\d+$/.test(String(value)) ? `${value}px` : value;
+        reactStyles.width = pixelOrRaw(value);
         break;
       case 'maxWidth':
-        reactStyles.maxWidth = /^\d+$/.test(String(value)) ? `${value}px` : value;
+        reactStyles.maxWidth = pixelOrRaw(value);
         break;
       case 'align':
         reactStyles.textAlign = value;

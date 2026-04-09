@@ -11,6 +11,7 @@ init global
 set spaceFromLeft "5"
 set size "14"
 set color "#333333"
+set lineHeight "1.55"
 end
 
 start
@@ -26,11 +27,13 @@ end
 start
 init section
 set size "18"
-set color "#38bdf8"
+set color "#0f172a"
 set spaceFromTop "20"
 set spaceFromBottom "8"
 set spaceFromLeft "0"
 set transform "uppercase"
+set letterSpacing "1"
+set fontWeight "700"
 end
 
 start
@@ -53,7 +56,7 @@ layout "between"
 end
 
 start
-write "$role"
+muted "$role"
 set color "#64748b"
 set size "14"
 set spaceFromBottom "15"
@@ -69,27 +72,21 @@ set spaceFromRight "0"
 end
 
 start
-write "SKILLS"
+write "Skills"
 design section
 end
 
 start
-add "dot"
-write "Languages: JavaScript, TypeScript, Python, C++"
+badge "JavaScript"
+badge "TypeScript"
+badge "React"
+badge "Next.js"
+badge "Node.js"
+badge "AWS"
 end
 
 start
-add "dot"
-write "Frameworks: React, Next.js, Node.js, Express, Django"
-end
-
-start
-add "dot"
-write "DevOps & Cloud: Docker, Kubernetes, AWS, Vercel"
-end
-
-start
-write "WORK EXPERIENCE"
+write "Work Experience"
 design section
 end
 
@@ -100,19 +97,21 @@ set color "#000000"
 end
 
 startFromSameLine
-muted "Tech Innovations Inc. (2022 - Present)"
+muted "Tech Innovations Inc. | 2022 - Present"
 set spaceFromLeft "15"
 layout "between"
 end
 
 start
-write "Spearheaded the migration of monolithic architecture to microservices using Node.js and Docker."
+add "dot"
+write "Spearheaded the migration of a monolithic platform to microservices using Node.js and Docker."
 set spaceFromLeft "15"
 set spaceFromTop "5"
 end
 
 start
-write "Mentored a team of 5 junior developers, establishing modern React best practices."
+add "dot"
+write "Mentored a team of 5 junior developers and introduced modern React delivery standards."
 set spaceFromLeft "15"
 end
 
@@ -124,19 +123,20 @@ set spaceFromTop "10"
 end
 
 startFromSameLine
-muted "StartupX (2020 - 2022)"
+muted "StartupX | 2020 - 2022"
 set spaceFromLeft "15"
 layout "between"
 end
 
 start
-write "Designed and implemented a high-conversion landing page resulting in 40% increased user retention."
+add "dot"
+write "Designed and implemented a high-conversion landing page that improved user retention by 40%."
 set spaceFromLeft "15"
 set spaceFromTop "5"
 end
 
 start
-write "PROJECTS"
+write "Projects"
 design section
 end
 
@@ -155,27 +155,19 @@ layout "between"
 end
 
 start
-write "A custom scripting language parser built with Next.js mapping text commands to visual resume components."
+write "A custom scripting language parser built with Next.js for visual resume composition and live preview."
 set spaceFromLeft "15"
 set spaceFromTop "5"
-end
-
-start
-draw "line"
-set weight "1"
-set color "#e2e8f0"
-set spaceFromTop "30"
-set spaceFromLeft "0"
-set spaceFromRight "0"
 end`,
   minimal: `declare fullName="JANE DOE"
-declare title="Minimalist Engineer"
+declare title="Minimalist Product Engineer"
 
 start
 init global
 set spaceFromLeft "10"
 set size "12"
 set color "#4b5563"
+set lineHeight "1.55"
 end
 
 start
@@ -189,11 +181,13 @@ end
 
 start
 init section
-set size "14"
+set size "13"
 set color "#1f2937"
-set spaceFromTop "30"
+set spaceFromTop "28"
 set spaceFromBottom "10"
 set transform "uppercase"
+set letterSpacing "1.2"
+set fontWeight "700"
 end
 
 start
@@ -202,29 +196,32 @@ design big
 end
 
 start
-write "$title"
-set color "#9ca3af"
-set spaceFromBottom "20"
+muted "$title"
+set spaceFromBottom "18"
 end
 
 start
-write "EXPERIENCE"
+write "Experience"
 design section
 end
 
 start
-write "Software Developer // Apple Inc // 2018 - 2024"
-set color "#4b5563"
+strong "Software Developer"
+end
+
+startFromSameLine
+muted "Apple Inc | 2018 - 2024"
+layout "between"
 end
 
 start
-write "Built core operating system components."
-set spaceFromLeft "20"
-set spaceFromTop "5"
+add "dot"
+write "Built core operating system components with a focus on maintainability and performance."
+set spaceFromLeft "18"
 end
 
 start
-write "EDUCATION"
+write "Education"
 design section
 end
 
@@ -233,13 +230,14 @@ write "Computer Science, Stanford University"
 set color "#4b5563"
 end`,
   creative: `declare fullName="ALEX CHEN"
-declare tagline="Creative Technologist • Designer • Thinker"
+declare tagline="Creative Technologist • Product Storyteller • Interaction Designer"
 
 start
 init global
 set spaceFromLeft "5"
 set size "16"
-set color "#000000"
+set color "#111827"
+set lineHeight "1.55"
 end
 
 start
@@ -254,14 +252,23 @@ end
 start
 init box
 set color "#8b5cf6"
-set size "20"
+set size "18"
 set spaceFromTop "15"
 set spaceFromBottom "10"
+set transform "uppercase"
+set letterSpacing "1.4"
+set fontWeight "700"
 end
 
 start
 write "$fullName"
 design fancy
+end
+
+start
+muted "$tagline"
+set color "#6366f1"
+set spaceFromBottom "20"
 end
 
 start
@@ -271,30 +278,30 @@ set color "#ec4899"
 end
 
 start
-write "$tagline"
-set color "#6366f1"
-set spaceFromTop "10"
-set spaceFromBottom "20"
+write "Selected Strengths"
+design box
 end
 
 start
-write "WHAT I DO"
+badge "Visual Systems"
+badge "Creative Direction"
+badge "Prototype Craft"
+badge "Frontend Motion"
+end
+
+start
+write "Experience Snapshot"
 design box
 end
 
 start
 add "dot"
-write "Frontend Magic"
+write "Led premium portfolio and campaign builds for product launches, conferences, and editorial brands."
 end
 
 start
 add "dot"
-write "Visual Interfaces"
-end
-
-start
-add "dot"
-write "Interactions Design"
+write "Bridged design and engineering using React-based interactive systems and thoughtful motion."
 end`,
   professional: `declare fullName="Sidharth Gupta"
 declare title="Senior Frontend Engineer"
@@ -313,7 +320,7 @@ init global
 set spaceFromLeft "0"
 set size "13"
 set color "#334155"
-set lineHeight "1.55"
+set lineHeight "1.58"
 end
 
 start
@@ -337,8 +344,8 @@ set size "12"
 set color "#0f172a"
 set fontWeight "700"
 set transform "uppercase"
-set letterSpacing "1.4"
-set spaceFromTop "18"
+set letterSpacing "1.6"
+set spaceFromTop "20"
 set spaceFromBottom "10"
 end
 
@@ -361,7 +368,7 @@ design heroName
 end
 
 start
-write "$title"
+muted "$title"
 design roleLine
 end
 
@@ -369,36 +376,44 @@ start
 muted "$location"
 design meta
 layout "start"
-gap "16"
+gap "14"
 end
 
 startFromSameLine
+add "pipe"
 muted "$email"
 design meta
 set_url "mailto:$email"
 end
 
 startFromSameLine
+add "pipe"
 muted "$phone"
 design meta
 end
 
 startFromSameLine
+add "pipe"
 write "$portfolioLabel"
 design meta
 set_url "$portfolioUrl"
+set decoration "underline"
 end
 
 startFromSameLine
+add "pipe"
 write "$linkedinLabel"
 design meta
 set_url "$linkedinUrl"
+set decoration "underline"
 end
 
 startFromSameLine
+add "pipe"
 write "$githubLabel"
 design meta
 set_url "$githubUrl"
+set decoration "underline"
 end
 
 start
@@ -415,11 +430,11 @@ design section
 end
 
 start
-write "Frontend engineer with 6+ years of experience building performant product surfaces, design systems, and growth-driven web apps across SaaS and commerce."
+write "Senior frontend engineer with 6+ years of experience shipping performant product surfaces, internal platforms, and design systems for SaaS teams. Strong track record in accessibility, performance tuning, and cross-functional execution."
 end
 
 start
-write "Core Strengths"
+write "Core Skills"
 design section
 end
 
@@ -429,7 +444,9 @@ badge "React"
 badge "Next.js"
 badge "Design Systems"
 badge "Accessibility"
-badge "Performance"
+badge "Web Performance"
+badge "Storybook"
+badge "Playwright"
 end
 
 start
@@ -461,20 +478,20 @@ end
 
 start
 add "dot"
-write "Led migration of a legacy dashboard to Next.js, reducing page-load time by 42%."
+write "Led the migration of a flagship customer dashboard to Next.js, improving initial page load time by 42%."
 set spaceFromLeft "14"
 set spaceFromTop "4"
 end
 
 start
 add "dot"
-write "Built a shared component library used across 5 product teams and 3 customer-facing apps."
+write "Built a shared component library used across 5 product teams, reducing duplicate UI work and improving consistency."
 set spaceFromLeft "14"
 end
 
 start
 add "dot"
-write "Partnered with product and design to launch onboarding improvements that increased activation by 18%."
+write "Partnered with product and design to redesign onboarding, contributing to an 18% lift in activation."
 set spaceFromLeft "14"
 end
 
@@ -503,25 +520,25 @@ end
 
 start
 add "dot"
-write "Delivered conversion-focused marketing pages for SaaS clients with strong Lighthouse scores."
+write "Delivered high-performing marketing and product pages for SaaS clients with strong Lighthouse and accessibility scores."
 set spaceFromLeft "14"
 set spaceFromTop "4"
 end
 
 start
 add "dot"
-write "Introduced reusable section primitives that cut landing-page build time by 35%."
+write "Introduced reusable section primitives that cut landing page build time by 35%."
 set spaceFromLeft "14"
 end
 
 start
 add "dot"
-write "Mentored 4 junior engineers on React architecture, accessibility, and UI testing."
+write "Mentored 4 junior engineers across React architecture, testing, and UI craftsmanship."
 set spaceFromLeft "14"
 end
 
 start
-write "Projects"
+write "Selected Projects"
 design section
 end
 
@@ -536,7 +553,7 @@ layout "between"
 end
 
 start
-write "A code-first resume builder with reusable variables, template presets, and live preview."
+write "Built a code-first resume builder with reusable syntax, live preview, export tooling, and professional template presets."
 set spaceFromTop "4"
 end
 
@@ -544,6 +561,31 @@ start
 muted "View Project"
 design meta
 set_url "https://example.com"
+set decoration "underline"
+set spaceFromBottom "8"
+end
+
+start
+strong "Design System Starter"
+design itemTitle
+set spaceFromTop "10"
+end
+
+startFromSameLine
+badge "Open Source"
+layout "between"
+end
+
+start
+write "Created a reusable starter kit for product teams adopting token-based theming, component documentation, and visual testing."
+set spaceFromTop "4"
+end
+
+start
+muted "github.com/example/design-system"
+design meta
+set decoration "underline"
+set_url "https://github.com/example/design-system"
 set spaceFromBottom "8"
 end
 
@@ -566,11 +608,22 @@ end
 start
 muted "Visvesvaraya Technological University"
 design meta
+end
+
+start
+write "Certifications"
+design section
+end
+
+start
+muted "AWS Certified Cloud Practitioner | Google UX Design Certificate"
+design meta
 end`,
   executive: `declare fullName="Priya Sharma"
 declare title="Engineering Manager"
 declare location="Mumbai, India"
 declare email="priya@example.com"
+declare phone="+91 98111 22334"
 declare linkedinLabel="LinkedIn"
 declare linkedinUrl="https://linkedin.com/in/priya"
 
@@ -579,12 +632,12 @@ init global
 set spaceFromLeft "0"
 set size "13"
 set color "#1f2937"
-set lineHeight "1.6"
+set lineHeight "1.62"
 end
 
 start
 init hero
-set size "28"
+set size "29"
 set color "#111827"
 set fontWeight "700"
 set spaceFromBottom "4"
@@ -602,9 +655,16 @@ set size "12"
 set color "#111827"
 set fontWeight "700"
 set transform "uppercase"
-set letterSpacing "1.2"
-set spaceFromTop "18"
+set letterSpacing "1.5"
+set spaceFromTop "20"
 set spaceFromBottom "10"
+end
+
+start
+init roleTitle
+set size "14"
+set color "#111827"
+set fontWeight "700"
 end
 
 start
@@ -613,7 +673,7 @@ design hero
 end
 
 start
-write "$title"
+muted "$title"
 set color "#4b5563"
 set size "15"
 set spaceFromBottom "12"
@@ -623,19 +683,28 @@ start
 muted "$location"
 design muted
 layout "start"
-gap "16"
+gap "14"
 end
 
 startFromSameLine
+add "pipe"
 muted "$email"
 design muted
 set_url "mailto:$email"
 end
 
 startFromSameLine
+add "pipe"
+muted "$phone"
+design muted
+end
+
+startFromSameLine
+add "pipe"
 write "$linkedinLabel"
 design muted
 set_url "$linkedinUrl"
+set decoration "underline"
 end
 
 start
@@ -652,54 +721,53 @@ design section
 end
 
 start
-write "Engineering leader with a track record of scaling teams, improving delivery predictability, and aligning product strategy with platform execution."
+write "Engineering leader with a track record of scaling teams, improving delivery predictability, and aligning platform execution with product strategy in high-growth commerce environments."
 end
 
 start
-write "Key Wins"
+write "Leadership Focus"
 design section
 end
 
 start
 badge "Team Scaling"
-badge "Roadmap Ownership"
-badge "Delivery Ops"
+badge "Roadmap Planning"
 badge "Hiring"
-badge "Stakeholder Management"
+badge "Delivery Operations"
+badge "Cross-functional Leadership"
+badge "Platform Strategy"
 end
 
 start
-write "Experience"
+write "Professional Experience"
 design section
 end
 
 start
 strong "Engineering Manager"
-set fontWeight "700"
-set size "14"
+design roleTitle
 end
 
 startFromSameLine
 strong "Orbit Commerce"
-set fontWeight "700"
-set size "14"
+design roleTitle
 layout "between"
 end
 
 start
-muted "2021 - Present"
+muted "Mumbai"
 design muted
 end
 
 startFromSameLine
-muted "Mumbai"
+muted "2021 - Present"
 design muted
 layout "between"
 end
 
 start
 add "dot"
-write "Grew the frontend platform team from 4 to 11 engineers across product and infrastructure pods."
+write "Scaled the frontend platform organization from 4 to 11 engineers across product and infrastructure pods."
 set spaceFromLeft "14"
 set spaceFromTop "4"
 end
@@ -712,7 +780,43 @@ end
 
 start
 add "dot"
-write "Partnered with design, product, and data leadership to unify the company’s customer account experience."
+write "Partnered with design, product, and data leadership to unify the customer account experience across web surfaces."
+set spaceFromLeft "14"
+end
+
+start
+strong "Senior Software Engineer"
+design roleTitle
+set spaceFromTop "12"
+end
+
+startFromSameLine
+strong "Mercury Retail"
+design roleTitle
+layout "between"
+end
+
+start
+muted "Bengaluru"
+design muted
+end
+
+startFromSameLine
+muted "2017 - 2021"
+design muted
+layout "between"
+end
+
+start
+add "dot"
+write "Owned critical checkout and account flows that supported multi-market rollouts and large seasonal traffic spikes."
+set spaceFromLeft "14"
+set spaceFromTop "4"
+end
+
+start
+add "dot"
+write "Mentored senior ICs into technical leadership roles and improved engineering calibration across teams."
 set spaceFromLeft "14"
 end
 
@@ -723,19 +827,30 @@ end
 
 start
 strong "MBA, Technology Management"
-set fontWeight "700"
+design roleTitle
 end
 
 startFromSameLine
 muted "SP Jain Institute of Management"
 design muted
 layout "between"
+end
+
+start
+write "Board Reporting"
+design section
+end
+
+start
+write "Regular executive reporting covered delivery health, hiring velocity, roadmap confidence, platform risk, and customer experience priorities."
 end`,
   ats_pro: `declare fullName="Arjun Mehta"
 declare title="Software Engineer"
 declare email="arjun@example.com"
 declare phone="+91 99888 77665"
 declare location="Pune, India"
+declare linkedinLabel="LinkedIn"
+declare linkedinUrl="https://linkedin.com/in/arjun"
 
 start
 init global
@@ -761,6 +876,7 @@ set fontWeight "700"
 set transform "uppercase"
 set spaceFromTop "18"
 set spaceFromBottom "8"
+set letterSpacing "1.2"
 end
 
 start
@@ -775,7 +891,7 @@ design name
 end
 
 start
-write "$title"
+muted "$title"
 set size "14"
 set color "#374151"
 set spaceFromBottom "10"
@@ -789,17 +905,26 @@ gap "14"
 end
 
 startFromSameLine
+add "pipe"
 muted "$phone"
 design meta
 end
 
 startFromSameLine
+add "pipe"
 muted "$location"
 design meta
 end
 
+startFromSameLine
+add "pipe"
+write "$linkedinLabel"
+design meta
+set_url "$linkedinUrl"
+end
+
 start
-write "Summary"
+write "Professional Summary"
 design section
 end
 
@@ -842,26 +967,32 @@ layout "between"
 end
 
 start
-muted "2021 - Present"
+muted "Pune"
 design meta
 end
 
 startFromSameLine
-muted "Pune"
+muted "2021 - Present"
 design meta
 layout "between"
 end
 
 start
 add "dot"
-write "Built operational tooling that reduced manual reconciliation effort by 30%."
+write "Built operational tooling that reduced manual reconciliation effort by 30% for finance and support teams."
 set spaceFromLeft "14"
 set spaceFromTop "4"
 end
 
 start
 add "dot"
-write "Implemented API integrations with payment and CRM platforms to improve data consistency."
+write "Implemented API integrations with payment and CRM platforms to improve data consistency and audit readiness."
+set spaceFromLeft "14"
+end
+
+start
+add "dot"
+write "Improved deployment confidence with automated checks and practical monitoring across internal services."
 set spaceFromLeft "14"
 end
 
@@ -883,5 +1014,261 @@ end
 start
 muted "Savitribai Phule Pune University"
 design meta
+end`,
+  studio_pro: `declare fullName="Mira Kapoor"
+declare title="Product Designer"
+declare location="Delhi, India"
+declare email="mira@example.com"
+declare portfolioLabel="Portfolio"
+declare portfolioUrl="https://mira.design"
+declare dribbbleLabel="Dribbble"
+declare dribbbleUrl="https://dribbble.com/mira"
+
+start
+init global
+set spaceFromLeft "0"
+set size "13"
+set color "#243143"
+set lineHeight "1.6"
+end
+
+start
+init hero
+set size "31"
+set color "#111827"
+set fontWeight "700"
+set spaceFromBottom "5"
+end
+
+start
+init accentSection
+set size "12"
+set color "#7c3aed"
+set fontWeight "700"
+set transform "uppercase"
+set letterSpacing "1.8"
+set spaceFromTop "20"
+set spaceFromBottom "10"
+end
+
+start
+init meta
+set size "12"
+set color "#6b7280"
+end
+
+start
+write "$fullName"
+design hero
+end
+
+start
+muted "$title"
+set size "15"
+set color "#4b5563"
+set spaceFromBottom "12"
+end
+
+start
+muted "$location"
+design meta
+layout "start"
+gap "14"
+end
+
+startFromSameLine
+add "pipe"
+muted "$email"
+design meta
+set_url "mailto:$email"
+end
+
+startFromSameLine
+add "pipe"
+write "$portfolioLabel"
+design meta
+set_url "$portfolioUrl"
+set decoration "underline"
+end
+
+startFromSameLine
+add "pipe"
+write "$dribbbleLabel"
+design meta
+set_url "$dribbbleUrl"
+set decoration "underline"
+end
+
+start
+draw "line"
+set weight "1"
+set color "#ddd6fe"
+set spaceFromTop "14"
+set spaceFromBottom "16"
+end
+
+start
+write "Profile"
+design accentSection
+end
+
+start
+write "Product designer focused on turning complex workflows into clear, elegant digital experiences across fintech and B2B SaaS."
+end
+
+start
+write "Capabilities"
+design accentSection
+end
+
+start
+badge "UX Strategy"
+badge "Design Systems"
+badge "Prototyping"
+badge "Research Synthesis"
+badge "Cross-functional Collaboration"
+end
+
+start
+write "Experience"
+design accentSection
+end
+
+start
+strong "Senior Product Designer"
+set fontWeight "700"
+set size "14"
+end
+
+startFromSameLine
+strong "LatticeWorks"
+set fontWeight "700"
+set size "14"
+layout "between"
+end
+
+start
+muted "Remote"
+design meta
+end
+
+startFromSameLine
+muted "2021 - Present"
+design meta
+layout "between"
+end
+
+start
+add "dot"
+write "Led end-to-end redesign of a workflow builder used by enterprise operations teams, improving task completion by 22%."
+set spaceFromLeft "14"
+set spaceFromTop "4"
+end
+
+start
+add "dot"
+write "Built and maintained a scalable design system with reusable patterns across product and marketing surfaces."
+set spaceFromLeft "14"
+end
+
+start
+add "dot"
+write "Facilitated product discovery, prototype validation, and design handoff with PM and engineering partners."
+set spaceFromLeft "14"
+end
+
+start
+strong "Product Designer"
+set fontWeight "700"
+set size "14"
+set spaceFromTop "12"
+end
+
+startFromSameLine
+strong "Harbor Studio"
+set fontWeight "700"
+set size "14"
+layout "between"
+end
+
+start
+muted "Delhi"
+design meta
+end
+
+startFromSameLine
+muted "2018 - 2021"
+design meta
+layout "between"
+end
+
+start
+add "dot"
+write "Designed responsive storytelling systems and polished product launch pages for SaaS, media, and education brands."
+set spaceFromLeft "14"
+set spaceFromTop "4"
+end
+
+start
+add "dot"
+write "Turned rough strategic ideas into clear interaction patterns, stronger visual hierarchy, and production-ready handoff."
+set spaceFromLeft "14"
+end
+
+start
+write "Selected Work"
+design accentSection
+end
+
+start
+strong "Workflow Builder Redesign"
+set fontWeight "700"
+end
+
+startFromSameLine
+badge "B2B SaaS"
+layout "between"
+end
+
+start
+write "Reframed a complex enterprise workflow experience into a simpler guided system with better progressive disclosure and stronger completion rates."
+set spaceFromTop "4"
+end
+
+start
+muted "View Case Study"
+design meta
+set decoration "underline"
+set_url "$portfolioUrl"
+set spaceFromBottom "8"
+end
+
+start
+write "Education"
+design accentSection
+end
+
+start
+strong "B.Des. in Communication Design"
+set fontWeight "700"
+end
+
+startFromSameLine
+muted "National Institute of Design"
+design meta
+layout "between"
+end
+
+start
+write "Tools"
+design accentSection
+end
+
+start
+badge "Figma"
+badge "Framer"
+badge "FigJam"
+badge "Adobe CC"
+badge "Design Systems"
 end`,
 };

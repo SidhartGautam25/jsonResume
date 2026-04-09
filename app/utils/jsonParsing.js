@@ -62,7 +62,7 @@ export const parseCodeToJson = (code) => {
   const { variables, codeWithoutDeclarations } = collectDeclaredVariables(code);
 
   const blocks = codeWithoutDeclarations
-    .split(/(?=startFromSameLine|start)/g)
+    .split(/(?=^startFromSameLine\b|^start\b)/gm)
     .filter((block) => block.trim() !== '');
 
   const jsonOutput = {
@@ -91,9 +91,9 @@ export const parseCodeToJson = (code) => {
 
     if (commands.length > 0 && commands[0].startsWith('init')) {
       const parts = commands[0].split(' ');
-      const varName = parts[1];
+      const definitionName = parts[1];
 
-      if (varName) {
+      if (definitionName) {
         const definitionStyles = {};
 
         commands.slice(1).forEach((cmd) => {
@@ -101,15 +101,15 @@ export const parseCodeToJson = (code) => {
 
           if (key === 'set') {
             const prop = valueParts[0];
-            const val = resolveValue(valueParts.slice(1).join(' '), variables);
-            definitionStyles[prop] = val;
+            const value = resolveValue(valueParts.slice(1).join(' '), variables);
+            definitionStyles[prop] = value;
           }
         });
 
-        if (varName === 'global') {
+        if (definitionName === 'global') {
           globalStyles = definitionStyles;
         } else {
-          jsonOutput.definitions[varName] = definitionStyles;
+          jsonOutput.definitions[definitionName] = definitionStyles;
         }
       }
 
@@ -142,8 +142,7 @@ export const parseCodeToJson = (code) => {
         case 'add':
           if (args === 'dot') {
             element.content.push({ type: 'dot' });
-          }
-          if (args === 'pipe') {
+          } else if (args === 'pipe') {
             element.content.push({ type: 'pipe' });
           }
           break;

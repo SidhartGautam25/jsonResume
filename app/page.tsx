@@ -9,8 +9,8 @@ import { SiteHeader } from "./comp/site-header";
 const features = [
   "Code-first builder with live preview",
   "Reusable variables with declare syntax",
-  "Design presets for consistent styling",
-  "Template gallery for faster starting points",
+  "Professional layout primitives and resume elements",
+  "PDF, HTML, JSON, and TXT export options",
 ];
 
 const productNotes = [
@@ -24,7 +24,7 @@ const productNotes = [
   },
   {
     title: "Professional workflow",
-    description: "Start from a template, customize your variables, and ship a polished resume much faster.",
+    description: "Start from a template, customize your variables, and export in multiple formats from the editor.",
   },
 ];
 
@@ -62,7 +62,7 @@ export default function Home() {
           <div className="hero-preview-card">
             <div className="hero-preview-label">Featured template preview</div>
             <div className="hero-preview-paper">
-              <Preview parsedJson={parseCodeToJson(templates.full)} disableLinks={true} />
+              <Preview parsedJson={parseCodeToJson(templates.professional)} disableLinks={true} />
             </div>
           </div>
         </section>
@@ -113,8 +113,8 @@ export default function Home() {
             <p className="eyebrow">What’s new</p>
             <h2>Variables now work across content, styles, and links</h2>
             <p>
-              Use <code>{'declare fullName="Sidharth"'}</code> once, then reference it anywhere with
-              <code> $fullName</code>.
+              Build from stronger templates, customize your declared values once, and export to PDF, HTML,
+              JSON, or TXT from the editor.
             </p>
           </div>
           <Link href="/docs" className="primary-link">
