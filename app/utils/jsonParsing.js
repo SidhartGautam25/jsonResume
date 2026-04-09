@@ -125,6 +125,9 @@ export const parseCodeToJson = (code) => {
         case 'write':
           element.content.push({ type: 'text', value: args });
           break;
+        case 'headline':
+          element.content.push({ type: 'headline', value: args });
+          break;
         case 'strong':
           element.content.push({ type: 'strong', value: args });
           break;
@@ -137,6 +140,8 @@ export const parseCodeToJson = (code) => {
         case 'draw':
           if (args === 'line') {
             element.type = 'hr';
+          } else if (args === 'bar') {
+            element.type = 'vr';
           }
           break;
         case 'add':
@@ -144,6 +149,8 @@ export const parseCodeToJson = (code) => {
             element.content.push({ type: 'dot' });
           } else if (args === 'pipe') {
             element.content.push({ type: 'pipe' });
+          } else if (args === 'break') {
+            element.content.push({ type: 'break' });
           }
           break;
         case 'set': {

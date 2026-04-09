@@ -18,6 +18,9 @@ export const convertToReactStyles = (styles) => {
       case 'lineHeight':
         reactStyles.lineHeight = value;
         break;
+      case 'fontFamily':
+        reactStyles.fontFamily = value;
+        break;
       case 'letterSpacing':
         reactStyles.letterSpacing = `${value}px`;
         break;
@@ -39,8 +42,23 @@ export const convertToReactStyles = (styles) => {
       case 'spaceFromRight':
         reactStyles.marginRight = `${value}px`;
         break;
+      case 'paddingLeft':
+        reactStyles.paddingLeft = `${value}px`;
+        break;
+      case 'paddingRight':
+        reactStyles.paddingRight = `${value}px`;
+        break;
+      case 'paddingTop':
+        reactStyles.paddingTop = `${value}px`;
+        break;
+      case 'paddingBottom':
+        reactStyles.paddingBottom = `${value}px`;
+        break;
       case 'width':
         reactStyles.width = pixelOrRaw(value);
+        break;
+      case 'height':
+        reactStyles.height = pixelOrRaw(value);
         break;
       case 'maxWidth':
         reactStyles.maxWidth = pixelOrRaw(value);
@@ -50,6 +68,13 @@ export const convertToReactStyles = (styles) => {
         break;
       case 'weight':
         reactStyles.borderBottomWidth = `${value}px`;
+        break;
+      case 'borderLeftWidth':
+        reactStyles.borderLeftWidth = `${value}px`;
+        reactStyles.borderLeftStyle = 'solid';
+        break;
+      case 'borderLeftColor':
+        reactStyles.borderLeftColor = value;
         break;
       default:
         break;

@@ -24,16 +24,29 @@ const ElementRenderer = ({ element, disableLinks }) => {
     return <hr style={hrStyle} />;
   }
 
+  if (element.type === 'vr') {
+    const barStyle = {
+      ...style,
+      width: style.width || '4px',
+      height: style.height || '72px',
+      backgroundColor: style.color || '#111111',
+      flexShrink: 0,
+    };
+    return <div style={barStyle} className="preview-vertical-bar" />;
+  }
+
   // Build the main content of the element
   const content = (
     <div style={style} className="preview-element">
       {element.content?.map((item, i) => {
         if (item.type === 'text') return <span key={i}>{item.value}</span>;
+        if (item.type === 'headline') return <span key={i} className="preview-headline-inline">{item.value}</span>;
         if (item.type === 'strong') return <strong key={i} className="preview-strong">{item.value}</strong>;
         if (item.type === 'muted') return <span key={i} className="preview-muted">{item.value}</span>;
         if (item.type === 'badge') return <span key={i} className="preview-badge">{item.value}</span>;
         if (item.type === 'dot') return <span key={i} className="dot">•</span>;
         if (item.type === 'pipe') return <span key={i} className="preview-pipe">|</span>;
+        if (item.type === 'break') return <br key={i} />;
         return null;
       })}
     </div>
@@ -327,7 +340,7 @@ export const Editor = ({ code, setCode }) => {
     let highlightedText = escapedText
       .replace(/"(.*?)"/g, '<span class="string">"$1"</span>') // Strings
       .replace(/\b(start|end|startFromSameLine)\b/g, '<span class="keyword-block">$1</span>') // Block keywords
-      .replace(/\b(declare|init|set|write|strong|muted|badge|design|set_url|draw|add|layout|gap|align)\b/g, '<span class="keyword-command">$1</span>')
+      .replace(/\b(declare|init|set|write|headline|strong|muted|badge|design|set_url|draw|add|layout|gap|align)\b/g, '<span class="keyword-command">$1</span>')
       .replace(/\$[A-Za-z_][A-Za-z0-9_]*/g, '<span class="variable-token">$&</span>');
 
     // Add extra newline at the end if the text ends with one, to keep scroll synchronized

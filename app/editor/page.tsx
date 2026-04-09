@@ -43,11 +43,13 @@ const styleObjectToString = (styles: Record<string, string>) =>
 
 const renderContentItem = (item: ParsedContentItem) => {
   if (item.type === 'text') return `<span>${escapeHtml(item.value || '')}</span>`;
+  if (item.type === 'headline') return `<span class="preview-headline-inline">${escapeHtml(item.value || '')}</span>`;
   if (item.type === 'strong') return `<strong>${escapeHtml(item.value || '')}</strong>`;
   if (item.type === 'muted') return `<span class="preview-muted">${escapeHtml(item.value || '')}</span>`;
   if (item.type === 'badge') return `<span class="preview-badge">${escapeHtml(item.value || '')}</span>`;
   if (item.type === 'dot') return `<span class="dot">•</span>`;
   if (item.type === 'pipe') return `<span class="preview-pipe">|</span>`;
+  if (item.type === 'break') return '<br />';
   return '';
 };
 
@@ -57,6 +59,11 @@ const renderElementHtml = (element: ParsedElement) => {
   if (element.type === 'hr') {
     const hrStyle = `${style};border:none;border-bottom-style:solid;border-color:${element.styles?.color || 'black'};width:100%;margin-top:1em;margin-bottom:1em;`;
     return `<hr style="${hrStyle}" />`;
+  }
+
+  if (element.type === 'vr') {
+    const barStyle = `${style};width:${element.styles?.width ? (/^\d+(\.\d+)?$/.test(String(element.styles.width)) ? `${element.styles.width}px` : element.styles.width) : '4px'};height:${element.styles?.height ? (/^\d+(\.\d+)?$/.test(String(element.styles.height)) ? `${element.styles.height}px` : element.styles.height) : '72px'};background-color:${element.styles?.color || '#111111'};flex-shrink:0;`;
+    return `<div style="${barStyle}"></div>`;
   }
 
   const content = `<div class="preview-element" style="${style}">${(element.content || []).map(renderContentItem).join('')}</div>`;
@@ -110,6 +117,7 @@ const renderHtmlDocument = (parsedJson: ParsedResume) => {
       .preview-content { color: #111827; font-family: Arial, sans-serif; font-size: 14px; line-height: 1.45; }
       .preview-element .dot { margin-right: 8px; font-weight: 700; }
       .preview-muted { color: #64748b; }
+      .preview-headline-inline { display:inline-block; font-family: Arial, Helvetica, sans-serif; font-size: 22px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
       .preview-badge { display: inline-block; padding: 4px 10px; margin-right: 8px; margin-bottom: 6px; border-radius: 999px; background: #e2e8f0; color: #0f172a; font-size: 12px; font-weight: 600; }
       .preview-pipe { color: #94a3b8; margin: 0 8px; }
       strong { font-weight: 700; }
