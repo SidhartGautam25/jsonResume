@@ -472,6 +472,21 @@ body {
   margin: 0 8px;
 }
 
+.preview-hanging-row {
+  display: flex;
+  align-items: flex-start;
+}
+
+.preview-hanging-dot {
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.preview-hanging-text {
+  flex: 1;
+  min-width: 0;
+}
+
 .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));

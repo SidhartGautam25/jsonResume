@@ -31,6 +31,7 @@ const commandRows = [
   ["start / end", "Create a new block that renders on a new line."],
   ["startFromSameLine", "Attach the block to the previous line so you can build left-right resume rows."],
   ["init", "Define a named style preset such as section headers, metadata, or role titles."],
+  ["init page", "Define page-level styles such as border, padding, and other full-resume presentation rules."],
   ["design", "Apply a named preset to the current block."],
   ["write", "Render normal text."],
   ["headline", "Render a larger in-block heading line, useful for stacked classic resume headers."],
@@ -61,10 +62,17 @@ const styleRows = [
   ["spaceFromBottom", "Bottom spacing in pixels."],
   ["spaceFromLeft", "Left margin in pixels."],
   ["spaceFromRight", "Right margin in pixels."],
+  ["column", "Assign a block to a named column such as left or right inside a multi-column section."],
+  ["columnWidth", "Set the width of a column block, such as 60% or 36%."],
+  ["columnGap", "Set the gap between columns in a grouped multi-column layout."],
+  ["columnAlign", "Control cross-axis alignment inside same-line grouped blocks when needed."],
+  ["hangingIndent", "Optional bullet-wrap alignment. When set on a dot-bullet block, wrapped lines align under the text instead of under the bullet."],
   ["paddingLeft / paddingRight", "Useful for inset headers or bordered content blocks."],
   ["paddingTop / paddingBottom", "Add inner spacing without changing line grouping."],
+  ["padding", "Apply overall inner spacing to a page-level or block-level container."],
   ["width / maxWidth", "Useful when constraining longer summary or project lines."],
   ["height", "Useful for vertical bars and fixed accents."],
+  ["borderWidth / borderColor", "Useful for page borders and stronger classic layouts."],
   ["borderLeftWidth / borderLeftColor", "Create left-accent headers or bordered blocks."],
   ["weight", "Border thickness for draw line blocks."],
 ];
@@ -105,6 +113,15 @@ export default function DocsPage() {
             A resume is built from blocks. Each block starts with <code>start</code> or
             <code> startFromSameLine</code>, contains one or more commands, and closes with <code>end</code>.
             Variables declared at the top can be reused throughout the file.
+          </p>
+          <p>
+            Most resumes are composed from three ideas: reusable declared values, style presets created with
+            <code> init</code>, and content blocks that mix commands like <code>strong</code>, <code>muted</code>,
+            <code> badge</code>, <code>draw</code>, and <code>add</code>.
+          </p>
+          <p>
+            When you need advanced layout, you can also define page-level styling with <code>init page</code> and
+            assign blocks into named columns using <code>set column</code> and <code>set columnWidth</code>.
           </p>
         </section>
 
@@ -202,11 +219,113 @@ end`}</pre>
         </section>
 
         <section className="docs-section">
+          <h2>Two-column layout example</h2>
+          <p>
+            To build a true two-column resume section, assign consecutive blocks to a left and right column. The
+            renderer groups those blocks together and keeps each column stacked independently.
+          </p>
+          <pre className="docs-example">{`start
+write "Projects"
+design sectionHeading
+set column "left"
+set columnWidth "60%"
+set columnGap "24"
+end
+
+start
+write "Career Objective"
+design sectionHeading
+set column "right"
+set columnWidth "36%"
+end
+
+start
+write "Project content continues in the left rail..."
+set column "left"
+set columnWidth "60%"
+end
+
+start
+write "Objective content continues in the right rail..."
+set column "right"
+set columnWidth "36%"
+end`}</pre>
+        </section>
+
+        <section className="docs-section">
+          <h2>Page-level styling example</h2>
+          <pre className="docs-example">{`start
+init page
+set borderWidth "4"
+set borderColor "#111111"
+set padding "22"
+end`}</pre>
+          <p>
+            Use page styles when a template needs a visible outer frame, tighter inner margins, or a more deliberate
+            paper treatment.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Optional hanging indent for bullets</h2>
+          <p>
+            By default, bullet lines wrap naturally with the bullet inline. If you want wrapped lines to align
+            under the first word instead of under the bullet, add <code>{'set hangingIndent "18"'}</code> or another
+            width that fits your layout.
+          </p>
+          <pre className="docs-example">{`start
+add "dot"
+write "Implemented a new stormwater retention plan for the City of Montreal, resulting in the creation of additional land for development."
+set hangingIndent "18"
+set spaceFromLeft "14"
+end`}</pre>
+          <p>
+            This is opt-in and only affects blocks that contain <code>{'add "dot"'}</code>. Existing templates and
+            older bullet blocks continue to work exactly the same unless you explicitly set the property.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Block behavior details</h2>
+          <div className="docs-list">
+            <div className="docs-row">
+              <strong>Single block</strong>
+              <span>
+                A normal <code>start</code> block renders on its own line and is best for summary text, bullets,
+                and section titles.
+              </span>
+            </div>
+            <div className="docs-row">
+              <strong>Inline block</strong>
+              <span>
+                A <code>startFromSameLine</code> block joins the previous line group. Use it for right-aligned
+                company/date pairs, compact metadata, and tag rows.
+              </span>
+            </div>
+            <div className="docs-row">
+              <strong>Layout + gap</strong>
+              <span>
+                <code>layout</code> controls how items in the same line group are distributed, while <code>gap</code>
+                adds breathing room between them.
+              </span>
+            </div>
+            <div className="docs-row">
+              <strong>Preset merge order</strong>
+              <span>
+                Global styles apply first, then preset styles from <code>design</code>, then block-level
+                <code>set</code> values override both.
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <section className="docs-section">
           <h2>Working with templates</h2>
           <p>
             Start with <code>professional</code> for a balanced software-engineering resume,
             <code> executive</code> for leadership-heavy profiles, <code>ats_pro</code> for simpler ATS-friendly
-            structure, and <code>studio_pro</code> for a more design-forward presentation.
+            structure, <code>studio_pro</code> for a more design-forward presentation, and
+            <code> community_intern_two_column</code> for a two-column student/community resume layout.
           </p>
         </section>
 

@@ -23,6 +23,7 @@ type ParsedElement = {
 };
 
 type ParsedResume = {
+  pageStyles?: Record<string, string>;
   elements: ParsedElement[];
 };
 
@@ -41,6 +42,64 @@ const styleObjectToString = (styles: Record<string, string>) =>
     .map(([key, value]) => `${toKebabCase(key)}:${value}`)
     .join(';');
 
+const groupRenderSections = (elements: ParsedElement[]) => {
+  const sections: Array<
+    | { type: 'elements'; elements: ParsedElement[] }
+    | { type: 'columns'; columns: Array<{ name: string; width: string | null; elements: ParsedElement[] }>; gap: string }
+  > = [];
+
+  for (let index = 0; index < elements.length; index += 1) {
+    const element = elements[index];
+    const columnName = element.styles?.column;
+
+    if (!columnName) {
+      sections.push({ type: 'elements', elements: [element] });
+      continue;
+    }
+
+    const columnElements: ParsedElement[] = [];
+
+    while (index < elements.length && elements[index].styles?.column) {
+      columnElements.push(elements[index]);
+      index += 1;
+    }
+
+    index -= 1;
+
+    const columns: Array<{ name: string; width: string | null; elements: ParsedElement[] }> = [];
+    const byName = new Map<string, { name: string; width: string | null; elements: ParsedElement[] }>();
+
+    columnElements.forEach((columnElement) => {
+      const name = columnElement.styles.column;
+      if (!byName.has(name)) {
+        const columnConfig = {
+          name,
+          width: columnElement.styles.columnWidth || null,
+          elements: [],
+        };
+        byName.set(name, columnConfig);
+        columns.push(columnConfig);
+      }
+      byName.get(name)?.elements.push(columnElement);
+    });
+
+    const columnGap = columnElements.find((columnElement) => columnElement.styles?.columnGap)?.styles?.columnGap || '24';
+    sections.push({ type: 'columns', columns, gap: columnGap });
+  }
+
+  const mergedSections: typeof sections = [];
+  sections.forEach((section) => {
+    const previousSection = mergedSections[mergedSections.length - 1];
+    if (section.type === 'elements' && previousSection?.type === 'elements') {
+      previousSection.elements.push(...section.elements);
+    } else {
+      mergedSections.push(section);
+    }
+  });
+
+  return mergedSections;
+};
+
 const renderContentItem = (item: ParsedContentItem) => {
   if (item.type === 'text') return `<span>${escapeHtml(item.value || '')}</span>`;
   if (item.type === 'headline') return `<span class="preview-headline-inline">${escapeHtml(item.value || '')}</span>`;
@@ -55,6 +114,8 @@ const renderContentItem = (item: ParsedContentItem) => {
 
 const renderElementHtml = (element: ParsedElement) => {
   const style = styleObjectToString(convertToReactStyles(element.styles || {}));
+  const hangingIndent = element.styles?.hangingIndent;
+  const hasBulletDot = (element.content || []).some((item) => item.type === 'dot');
 
   if (element.type === 'hr') {
     const hrStyle = `${style};border:none;border-bottom-style:solid;border-color:${element.styles?.color || 'black'};width:100%;margin-top:1em;margin-bottom:1em;`;
@@ -66,7 +127,15 @@ const renderElementHtml = (element: ParsedElement) => {
     return `<div style="${barStyle}"></div>`;
   }
 
-  const content = `<div class="preview-element" style="${style}">${(element.content || []).map(renderContentItem).join('')}</div>`;
+  const content = hangingIndent && hasBulletDot
+    ? (() => {
+        const dotIndex = element.content.findIndex((item) => item.type === 'dot');
+        const beforeDot = element.content.slice(0, dotIndex).map(renderContentItem).join('');
+        const afterDot = element.content.slice(dotIndex + 1).map(renderContentItem).join('');
+        const indentValue = /^\d+(\.\d+)?$/.test(String(hangingIndent)) ? `${hangingIndent}px` : String(hangingIndent);
+        return `<div class="preview-element preview-hanging-indent" style="${style}">${beforeDot ? `<div class="preview-inline-prefix">${beforeDot}</div>` : ''}<div class="preview-hanging-row"><span class="dot preview-hanging-dot" style="width:${indentValue};min-width:${indentValue}">•</span><div class="preview-hanging-text">${afterDot}</div></div></div>`;
+      })()
+    : `<div class="preview-element" style="${style}">${(element.content || []).map(renderContentItem).join('')}</div>`;
 
   if (element.url) {
     return `<a href="${escapeHtml(element.url)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none">${content}</a>`;
@@ -76,34 +145,63 @@ const renderElementHtml = (element: ParsedElement) => {
 };
 
 const renderHtmlDocument = (parsedJson: ParsedResume) => {
-  const groupedLines = parsedJson.elements.reduce((acc: ParsedElement[][], element: ParsedElement) => {
-    if (element.isInline && acc.length > 0) {
-      acc[acc.length - 1].push(element);
-    } else {
-      acc.push([element]);
-    }
-    return acc;
-  }, []);
+  const renderLineGroups = (elements: ParsedElement[]) => {
+    const groupedLines = elements.reduce((acc: ParsedElement[][], element: ParsedElement) => {
+      if (element.isInline && acc.length > 0) {
+        acc[acc.length - 1].push(element);
+      } else {
+        acc.push([element]);
+      }
+      return acc;
+    }, []);
 
-  const justifyContentMap: Record<string, string> = {
-    start: 'flex-start',
-    center: 'center',
-    end: 'flex-end',
-    between: 'space-between',
-    around: 'space-around',
+    const justifyContentMap: Record<string, string> = {
+      start: 'flex-start',
+      center: 'center',
+      end: 'flex-end',
+      between: 'space-between',
+      around: 'space-around',
+    };
+    const alignItemsMap: Record<string, string> = {
+      start: 'flex-start',
+      center: 'center',
+      end: 'flex-end',
+      baseline: 'baseline',
+    };
+
+    return groupedLines.map((lineGroup) => {
+      if (lineGroup.length === 1) {
+        return renderElementHtml(lineGroup[0]);
+      }
+
+      const lineLayout = lineGroup.find((element) => element.layout)?.layout || 'between';
+      const lineGap = lineGroup.find((element) => element.gap)?.gap || '0';
+      const lineAlign = lineGroup.find((element) => element.styles?.columnAlign)?.styles?.columnAlign || 'baseline';
+      const normalizedGap = /^\d+(\.\d+)?$/.test(String(lineGap)) ? `${lineGap}px` : lineGap;
+
+      return `<div style="display:flex;justify-content:${justifyContentMap[lineLayout] || 'space-between'};align-items:${alignItemsMap[lineAlign] || 'baseline'};gap:${normalizedGap};flex-wrap:wrap">${lineGroup.map(renderElementHtml).join('')}</div>`;
+    }).join('');
   };
 
-  const html = groupedLines.map((lineGroup) => {
-    if (lineGroup.length === 1) {
-      return renderElementHtml(lineGroup[0]);
+  const renderSections = groupRenderSections(parsedJson.elements);
+  const html = renderSections.map((section) => {
+    if (section.type === 'columns') {
+      const normalizedGap = /^\d+(\.\d+)?$/.test(String(section.gap)) ? `${section.gap}px` : section.gap;
+      const columnsHtml = section.columns.map((column) => {
+        const width = column.width || '1fr';
+        const normalizedWidth = /^\d+(\.\d+)?$/.test(String(width)) ? `${width}px` : width;
+        const columnStyle = width === '1fr'
+          ? 'flex:1;min-width:0;'
+          : `width:${normalizedWidth};min-width:0;flex-shrink:0;`;
+        return `<div style="${columnStyle}">${renderLineGroups(column.elements)}</div>`;
+      }).join('');
+      return `<div style="display:flex;align-items:flex-start;gap:${normalizedGap}">${columnsHtml}</div>`;
     }
 
-    const lineLayout = lineGroup.find((element) => element.layout)?.layout || 'between';
-    const lineGap = lineGroup.find((element) => element.gap)?.gap || '0';
-    const normalizedGap = /^\d+(\.\d+)?$/.test(String(lineGap)) ? `${lineGap}px` : lineGap;
-
-    return `<div style="display:flex;justify-content:${justifyContentMap[lineLayout] || 'space-between'};align-items:baseline;gap:${normalizedGap};flex-wrap:wrap">${lineGroup.map(renderElementHtml).join('')}</div>`;
+    return renderLineGroups(section.elements);
   }).join('');
+
+  const pageStyle = styleObjectToString(convertToReactStyles(parsedJson.pageStyles || {}));
 
   return `<!doctype html>
 <html lang="en">
@@ -120,12 +218,15 @@ const renderHtmlDocument = (parsedJson: ParsedResume) => {
       .preview-headline-inline { display:inline-block; font-family: Arial, Helvetica, sans-serif; font-size: 22px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
       .preview-badge { display: inline-block; padding: 4px 10px; margin-right: 8px; margin-bottom: 6px; border-radius: 999px; background: #e2e8f0; color: #0f172a; font-size: 12px; font-weight: 600; }
       .preview-pipe { color: #94a3b8; margin: 0 8px; }
+      .preview-hanging-row { display:flex; align-items:flex-start; }
+      .preview-hanging-dot { display:inline-block; flex-shrink:0; }
+      .preview-hanging-text { flex:1; min-width:0; }
       strong { font-weight: 700; }
     </style>
   </head>
   <body>
     <div class="page">
-      <div class="preview-content">${html}</div>
+      <div class="preview-content" style="${pageStyle}">${html}</div>
     </div>
   </body>
 </html>`;

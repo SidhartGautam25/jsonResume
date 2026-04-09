@@ -68,6 +68,7 @@ export const parseCodeToJson = (code) => {
   const jsonOutput = {
     definitions: {},
     variables,
+    pageStyles: {},
     elements: [],
   };
 
@@ -108,6 +109,8 @@ export const parseCodeToJson = (code) => {
 
         if (definitionName === 'global') {
           globalStyles = definitionStyles;
+        } else if (definitionName === 'page') {
+          jsonOutput.pageStyles = definitionStyles;
         } else {
           jsonOutput.definitions[definitionName] = definitionStyles;
         }

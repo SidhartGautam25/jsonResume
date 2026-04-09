@@ -30,6 +30,9 @@ export const convertToReactStyles = (styles) => {
       case 'decoration':
         reactStyles.textDecoration = value;
         break;
+      case 'padding':
+        reactStyles.padding = `${value}px`;
+        break;
       case 'spaceFromTop':
         reactStyles.marginTop = `${value}px`;
         break;
@@ -62,6 +65,16 @@ export const convertToReactStyles = (styles) => {
         break;
       case 'maxWidth':
         reactStyles.maxWidth = pixelOrRaw(value);
+        break;
+      case 'borderWidth':
+        reactStyles.borderWidth = `${value}px`;
+        reactStyles.borderStyle = 'solid';
+        break;
+      case 'borderColor':
+        reactStyles.borderColor = value;
+        break;
+      case 'borderRadius':
+        reactStyles.borderRadius = `${value}px`;
         break;
       case 'align':
         reactStyles.textAlign = value;
