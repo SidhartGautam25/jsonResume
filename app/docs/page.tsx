@@ -34,6 +34,7 @@ const commandRows = [
   ["init page", "Define page-level styles such as border, padding, and other full-resume presentation rules."],
   ["design", "Apply a named preset to the current block."],
   ["write", "Render normal text."],
+  ["image", "Render an image from a URL or uploaded data URL. Useful for profile photos, logos, and visual sidebars."],
   ["headline", "Render a larger in-block heading line, useful for stacked classic resume headers."],
   ["strong", "Render emphasized text for titles, company names, or section-leading phrases."],
   ["muted", "Render lower-emphasis metadata such as dates, location, email, and supporting labels."],
@@ -53,6 +54,7 @@ const styleRows = [
   ["size", "Font size in pixels."],
   ["color", "Text or line color."],
   ["backgroundColor", "Set a background color on a specific block or on the page preset."],
+  ["fit", "For image blocks, control object-fit such as cover or contain."],
   ["fontWeight", "Weight for headings or emphasized text."],
   ["lineHeight", "Line height for denser or more breathable copy."],
   ["fontFamily", "Useful for matching serif or sans-serif resume styles."],
@@ -75,10 +77,11 @@ const styleRows = [
   ["paddingTop / paddingBottom", "Add inner spacing without changing line grouping."],
   ["padding", "Apply overall inner spacing to a page-level or block-level container."],
   ["width / maxWidth", "Useful when constraining longer summary or project lines."],
-  ["height", "Useful for vertical bars and fixed accents."],
+  ["height", 'Useful for vertical bars, fixed accents, or `set height "remaining"` filler blocks.'],
   ["borderWidth / borderColor", "Useful for page borders and stronger classic layouts."],
   ["borderLeftWidth / borderLeftColor", "Create left-accent headers or bordered blocks."],
   ["weight", "Border thickness for draw line blocks."],
+  ["bleed", "Page-level option that lets a template extend beyond the default paper padding for edge-to-edge layouts."],
 ];
 
 export default function DocsPage() {
@@ -253,6 +256,129 @@ start
 write "Objective content continues in the right rail..."
 set column "right"
 set columnWidth "36%"
+end`}</pre>
+        </section>
+
+        <section className="docs-section">
+          <h2>Column header with photo</h2>
+          <p>
+            A strong pattern is to use columns only for the header area. Put the image in a narrow left column and
+            stack the name, title, and contact line in a wider right column. After that, switch back to normal blocks.
+          </p>
+          <pre className="docs-example">{`declare profilePhoto="https://example.com/photo.jpg"
+declare fullName="Ethan Collins"
+declare title="Engineering Manager"
+declare email="ethan@example.com"
+
+start
+image "$profilePhoto"
+set column "photo"
+set columnWidth "118"
+set columnGap "20"
+set width "112"
+set height "112"
+set borderRadius "20"
+set fit "cover"
+end
+
+start
+write "$fullName"
+set column "identity"
+set columnWidth "1fr"
+set size "30"
+end
+
+start
+write "$title"
+set column "identity"
+set columnWidth "1fr"
+set size "17"
+end
+
+start
+muted "$email"
+set column "identity"
+set columnWidth "1fr"
+end
+
+start
+draw line
+set color "#cbd5e1"
+end`}</pre>
+          <p>
+            The line block is not tagged with a column, so the column section ends there and the resume continues in
+            the normal single-column flow.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Fixed sidebar plus flexible content</h2>
+          <p>
+            You can mix a fixed-width sidebar with a fluid content area. This is useful for photo rails, education
+            sidebars, or link panels.
+          </p>
+          <pre className="docs-example">{`start
+write "Sidebar heading"
+set column "left"
+set columnWidth "220"
+set columnGap "0"
+set columnBackgroundColor "#dbe7f5"
+set columnPaddingTop "24"
+set columnPaddingBottom "24"
+set columnPaddingLeft "20"
+set columnPaddingRight "20"
+end
+
+start
+write "Main content heading"
+set column "right"
+set columnWidth "1fr"
+set columnBackgroundColor "#ffffff"
+set columnPaddingTop "24"
+set columnPaddingBottom "24"
+set columnPaddingLeft "28"
+set columnPaddingRight "28"
+end`}</pre>
+        </section>
+
+        <section className="docs-section">
+          <h2>Fill the rest of a sidebar</h2>
+          <p>
+            When a sidebar should visually run to the bottom of the page, add a final empty block and set its height
+            to <code>&quot;remaining&quot;</code>.
+          </p>
+          <pre className="docs-example">{`start
+write ""
+set column "left"
+set columnWidth "31%"
+set height "remaining"
+end`}</pre>
+          <p>
+            This works best when that column already has a <code>columnBackgroundColor</code>, because the filler block
+            extends the visual rail without forcing you to guess a pixel height.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Return to normal flow after columns</h2>
+          <p>
+            Columns only apply to one consecutive run of blocks. As soon as you create a block without
+            <code> set column</code>, the layout returns to the regular full-width flow.
+          </p>
+          <pre className="docs-example">{`start
+write "Left"
+set column "left"
+set columnWidth "40%"
+end
+
+start
+write "Right"
+set column "right"
+set columnWidth "60%"
+end
+
+start
+write "This block is back in the normal flow."
 end`}</pre>
         </section>
 

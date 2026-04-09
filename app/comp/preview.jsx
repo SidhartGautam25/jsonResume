@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 import React from 'react';
 // import { convertToReactStyles } from "../../../codeResume/client/src/utils/design";
@@ -35,6 +36,23 @@ const ElementRenderer = ({ element, disableLinks }) => {
       flexShrink: 0,
     };
     return <div style={barStyle} className="preview-vertical-bar" />;
+  }
+
+  if (element.type === 'img') {
+    const imageNode = (
+      <img
+        src={element.src || ''}
+        alt={element.styles?.alt || 'Resume image'}
+        style={{ display: 'block', maxWidth: '100%', ...style }}
+        className="preview-image"
+      />
+    );
+
+    if (element.url && !disableLinks) {
+      return <a href={element.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>{imageNode}</a>;
+    }
+
+    return imageNode;
   }
 
   const renderContentItem = (item, i) => {
@@ -522,7 +540,7 @@ export const Editor = ({ code, setCode }) => {
     let highlightedText = escapedText
       .replace(/"(.*?)"/g, '<span class="string">"$1"</span>') // Strings
       .replace(/\b(start|end|startFromSameLine)\b/g, '<span class="keyword-block">$1</span>') // Block keywords
-      .replace(/\b(declare|init|set|write|headline|strong|muted|badge|design|set_url|draw|add|layout|gap|align)\b/g, '<span class="keyword-command">$1</span>')
+      .replace(/\b(declare|init|set|write|image|headline|strong|muted|badge|design|set_url|draw|add|layout|gap|align)\b/g, '<span class="keyword-command">$1</span>')
       .replace(/\$[A-Za-z_][A-Za-z0-9_]*/g, '<span class="variable-token">$&</span>');
 
     // Add extra newline at the end if the text ends with one, to keep scroll synchronized

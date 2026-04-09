@@ -1,6 +1,10 @@
 const pixelOrRaw = (value) => (/^\d+(\.\d+)?$/.test(String(value)) ? `${value}px` : value);
 
-export const convertToReactStyles = (styles) => {
+/**
+ * @param {Record<string, string | number | null | undefined>} styles
+ * @returns {Record<string, string>}
+ */
+export const convertToReactStyles = (styles = {}) => {
   const reactStyles = {};
   if (!styles) return reactStyles;
 
@@ -27,6 +31,9 @@ export const convertToReactStyles = (styles) => {
         break;
       case 'fontFamily':
         reactStyles.fontFamily = value;
+        break;
+      case 'fit':
+        reactStyles.objectFit = value;
         break;
       case 'letterSpacing':
         reactStyles.letterSpacing = `${value}px`;

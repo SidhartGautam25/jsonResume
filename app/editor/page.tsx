@@ -1,5 +1,5 @@
 'use client'
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import { useSearchParams } from 'next/navigation';
 import { Editor, Preview } from "../comp/preview";
 import { parseCodeToJson } from '../utils/jsonParsing';
@@ -17,6 +17,7 @@ type ParsedElement = {
   content: ParsedContentItem[];
   styles: Record<string, string>;
   isInline: boolean;
+  src?: string | null;
   url: string | null;
   layout: string | null;
   gap: string | null;
@@ -42,6 +43,11 @@ const styleObjectToString = (styles: Record<string, string>) =>
     .filter(([, value]) => value !== undefined && value !== null && value !== '')
     .map(([key, value]) => `${toKebabCase(key)}:${value}`)
     .join(';');
+
+const toReactStyleMap = (
+  styles?: Record<string, string | number | null | undefined>
+): Record<string, string> =>
+  convertToReactStyles((styles ?? {}) as unknown as Record<string, string>) as Record<string, string>;
 
 const groupRenderSections = (elements: ParsedElement[]) => {
   const columnStyleMap: Record<string, string> = {
@@ -157,7 +163,7 @@ const renderContentItem = (item: ParsedContentItem) => {
 };
 
 const renderElementHtml = (element: ParsedElement) => {
-  const style = styleObjectToString(convertToReactStyles(element.styles || {}));
+  const style = styleObjectToString(toReactStyleMap(element.styles));
   const hangingIndent = element.styles?.hangingIndent;
   const hasBulletDot = (element.content || []).some((item) => item.type === 'dot');
 
@@ -169,6 +175,15 @@ const renderElementHtml = (element: ParsedElement) => {
   if (element.type === 'vr') {
     const barStyle = `${style};width:${element.styles?.width ? (/^\d+(\.\d+)?$/.test(String(element.styles.width)) ? `${element.styles.width}px` : element.styles.width) : '4px'};height:${element.styles?.height ? (/^\d+(\.\d+)?$/.test(String(element.styles.height)) ? `${element.styles.height}px` : element.styles.height) : '72px'};background-color:${element.styles?.color || '#111111'};flex-shrink:0;`;
     return `<div style="${barStyle}"></div>`;
+  }
+
+  if (element.type === 'img') {
+    const imageStyle = style ? `display:block;max-width:100%;${style}` : 'display:block;max-width:100%;';
+    const imageHtml = `<img src="${escapeHtml(element.src || '')}" alt="${escapeHtml(element.styles?.alt || 'Resume image')}" style="${imageStyle}" />`;
+    if (element.url) {
+      return `<a href="${escapeHtml(element.url)}" target="_blank" rel="noopener noreferrer" style="text-decoration:none">${imageHtml}</a>`;
+    }
+    return imageHtml;
   }
 
   const content = hangingIndent && hasBulletDot
@@ -238,7 +253,7 @@ const renderHtmlDocument = (parsedJson: ParsedResume) => {
         const width = column.width || '1fr';
         const normalizedWidth = /^\d+(\.\d+)?$/.test(String(width)) ? `${width}px` : width;
         const isFixedWidth = /^\d+(\.\d+)?(px)?$/.test(String(width));
-        const containerStyle = styleObjectToString(convertToReactStyles({
+        const containerStyle = styleObjectToString(toReactStyleMap({
           backgroundColor: column.styles.backgroundColor || '',
           padding: column.styles.padding || '',
           paddingTop: column.styles.paddingTop || '',
@@ -248,7 +263,7 @@ const renderHtmlDocument = (parsedJson: ParsedResume) => {
           borderWidth: column.styles.borderWidth || '',
           borderColor: column.styles.borderColor || '',
           borderRadius: column.styles.borderRadius || '',
-        } as Record<string, string>));
+        }));
         const columnStyle = width === '1fr'
           ? `flex:1;min-width:0;display:flex;flex-direction:column;${containerStyle}`
           : isFixedWidth
@@ -262,7 +277,7 @@ const renderHtmlDocument = (parsedJson: ParsedResume) => {
     return renderLineGroups(section.elements);
   }).join('');
 
-  const pageStyle = styleObjectToString(convertToReactStyles(parsedJson.pageStyles || {}));
+  const pageStyle = styleObjectToString(toReactStyleMap(parsedJson.pageStyles));
 
   return `<!doctype html>
 <html lang="en">
@@ -302,6 +317,7 @@ function EditorContent() {
 
   const [code, setCode] = useState(initialCode);
   const [parsedJson, setParsedJson] = useState<ParsedResume>(initialParsedJson);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
 
   const compileCode = (nextCode: string) => {
     const result = parseCodeToJson(nextCode) as ParsedResume;
@@ -346,6 +362,71 @@ function EditorContent() {
     });
   };
 
+  const createImageVariableName = (filename: string) => {
+    const normalizedBase = filename
+      .replace(/\.[^.]+$/, '')
+      .replace(/[^A-Za-z0-9]+/g, '_')
+      .replace(/^(\d)/, '_$1')
+      .replace(/^_+|_+$/g, '') || 'uploaded_image';
+
+    let candidate = normalizedBase;
+    let suffix = 1;
+    while (new RegExp(`declare\\s+${candidate}\\s*=`).test(code)) {
+      suffix += 1;
+      candidate = `${normalizedBase}_${suffix}`;
+    }
+
+    return candidate;
+  };
+
+  const handleOpenImageUpload = () => {
+    imageInputRef.current?.click();
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      if (typeof result !== 'string') {
+        return;
+      }
+
+      const variableName = createImageVariableName(file.name);
+      const declarationLine = `declare ${variableName}="${result}"`;
+      const lines = code.split('\n');
+      let declarationInsertIndex = 0;
+
+      while (declarationInsertIndex < lines.length && lines[declarationInsertIndex].trim().startsWith('declare ')) {
+        declarationInsertIndex += 1;
+      }
+
+      lines.splice(declarationInsertIndex, 0, declarationLine, '');
+
+      const imageSnippet = [
+        'start',
+        `image "$${variableName}"`,
+        `set alt "${file.name.replace(/"/g, '') || 'Uploaded image'}"`,
+        'set width "96"',
+        'set height "96"',
+        'set borderRadius "999"',
+        'set fit "cover"',
+        'end',
+      ].join('\n');
+
+      const updatedCode = `${lines.join('\n').replace(/\s*$/, '')}\n\n${imageSnippet}\n`;
+      setCode(updatedCode);
+      compileCode(updatedCode);
+      event.target.value = '';
+    };
+
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="app-root">
       <div className="container">
@@ -360,6 +441,9 @@ function EditorContent() {
                 Compile
               </button>
               <div className="export-row">
+                <button onClick={handleOpenImageUpload} className="secondary-action-btn">
+                  Upload Image
+                </button>
                 <button onClick={handleExportPdf} className="secondary-action-btn">
                   Export PDF
                 </button>
@@ -373,6 +457,13 @@ function EditorContent() {
                   Export TXT
                 </button>
               </div>
+              <input
+                ref={imageInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                style={{ display: 'none' }}
+              />
             </div>
 
             <div className="editor-wrap">

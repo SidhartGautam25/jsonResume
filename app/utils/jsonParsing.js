@@ -54,6 +54,7 @@ const createElement = (blockType) => ({
   styles: {},
   isInline: blockType === 'startFromSameLine',
   url: null,
+  src: null,
   layout: null,
   gap: null,
 });
@@ -143,6 +144,10 @@ export const parseCodeToJson = (code) => {
       switch (command) {
         case 'write':
           element.content.push({ type: 'text', value: args });
+          break;
+        case 'image':
+          element.type = 'img';
+          element.src = args;
           break;
         case 'headline':
           element.content.push({ type: 'headline', value: args });
