@@ -1,4 +1,5 @@
 const DECLARE_REGEX = /^declare\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+)$/;
+const ASSET_TOKEN_PREFIX = '@asset:';
 
 const stripWrappingQuotes = (value) => {
   const trimmedValue = value.trim();
@@ -13,7 +14,16 @@ const stripWrappingQuotes = (value) => {
   return trimmedValue;
 };
 
-const collectDeclaredVariables = (code) => {
+const resolveDeclaredAssetValue = (value, assets) => {
+  if (!value.startsWith(ASSET_TOKEN_PREFIX)) {
+    return value;
+  }
+
+  const assetKey = value.slice(ASSET_TOKEN_PREFIX.length);
+  return assets[assetKey] || value;
+};
+
+const collectDeclaredVariables = (code, assets = {}) => {
   const variables = {};
   const remainingLines = [];
 
@@ -27,7 +37,7 @@ const collectDeclaredVariables = (code) => {
     }
 
     const [, variableName, rawValue] = declareMatch;
-    variables[variableName] = stripWrappingQuotes(rawValue);
+    variables[variableName] = resolveDeclaredAssetValue(stripWrappingQuotes(rawValue), assets);
   });
 
   return {
@@ -75,8 +85,8 @@ const COLUMN_STYLE_KEYS = [
   'columnBorderRadius',
 ];
 
-export const parseCodeToJson = (code) => {
-  const { variables, codeWithoutDeclarations } = collectDeclaredVariables(code);
+export const parseCodeToJson = (code, assets = {}) => {
+  const { variables, codeWithoutDeclarations } = collectDeclaredVariables(code, assets);
 
   const blocks = codeWithoutDeclarations
     .split(/(?=^startFromSameLine\b|^start\b)/gm)

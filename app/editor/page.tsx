@@ -1,5 +1,5 @@
 'use client'
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from 'next/navigation';
 import { Editor, Preview } from "../comp/preview";
 import { parseCodeToJson } from '../utils/jsonParsing';
@@ -27,6 +27,9 @@ type ParsedResume = {
   pageStyles?: Record<string, string>;
   elements: ParsedElement[];
 };
+
+const UPLOADED_ASSETS_STORAGE_KEY = 'codeResume-uploaded-assets';
+const ASSET_TOKEN_PREFIX = '@asset:';
 
 const toKebabCase = (value: string) => value.replace(/[A-Z]/g, (match) => `-${match.toLowerCase()}`);
 
@@ -313,14 +316,50 @@ function EditorContent() {
   const templateKey = searchParams.get('template') || 'full';
 
   const initialCode = templates[templateKey as keyof typeof templates] || templates.full;
-  const initialParsedJson = parseCodeToJson(initialCode);
+  const [uploadedAssets, setUploadedAssets] = useState<Record<string, string>>(() => {
+    if (typeof window === 'undefined') {
+      return {};
+    }
+
+    try {
+      const storedValue = window.localStorage.getItem(UPLOADED_ASSETS_STORAGE_KEY);
+      return storedValue ? JSON.parse(storedValue) as Record<string, string> : {};
+    } catch {
+      return {};
+    }
+  });
+  const initialParsedJson = parseCodeToJson(initialCode, uploadedAssets);
 
   const [code, setCode] = useState(initialCode);
   const [parsedJson, setParsedJson] = useState<ParsedResume>(initialParsedJson);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
 
-  const compileCode = (nextCode: string) => {
-    const result = parseCodeToJson(nextCode) as ParsedResume;
+  useEffect(() => {
+    window.localStorage.setItem(UPLOADED_ASSETS_STORAGE_KEY, JSON.stringify(uploadedAssets));
+  }, [uploadedAssets]);
+
+  const buildSelfContainedDsl = (sourceCode: string, assets: Record<string, string>) =>
+    sourceCode
+      .split('\n')
+      .map((line) => {
+        const declareMatch = line.match(/^(\s*)declare\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*["'](@asset:[A-Za-z_][A-Za-z0-9_]*)["']\s*$/);
+        if (!declareMatch) {
+          return line;
+        }
+
+        const [, indentation, variableName, assetToken] = declareMatch;
+        const assetKey = assetToken.slice(ASSET_TOKEN_PREFIX.length);
+        const assetValue = assets[assetKey];
+        if (!assetValue) {
+          return line;
+        }
+
+        return `${indentation}declare ${variableName}="${assetValue}"`;
+      })
+      .join('\n');
+
+  const compileCode = (nextCode: string, assetMap: Record<string, string> = uploadedAssets) => {
+    const result = parseCodeToJson(nextCode, assetMap) as ParsedResume;
     setParsedJson(result);
     return result;
   };
@@ -345,7 +384,7 @@ function EditorContent() {
   };
 
   const handleExportDsl = () => {
-    downloadFile('resume.coderesume.txt', code, 'text/plain;charset=utf-8');
+    downloadFile('resume.coderesume.txt', buildSelfContainedDsl(code, uploadedAssets), 'text/plain;charset=utf-8');
   };
 
   const handleExportHtml = () => {
@@ -362,21 +401,17 @@ function EditorContent() {
     });
   };
 
-  const createImageVariableName = (filename: string) => {
-    const normalizedBase = filename
-      .replace(/\.[^.]+$/, '')
-      .replace(/[^A-Za-z0-9]+/g, '_')
-      .replace(/^(\d)/, '_$1')
-      .replace(/^_+|_+$/g, '') || 'uploaded_image';
+  const createImageVariableName = () => {
+    let imageIndex = 1;
 
-    let candidate = normalizedBase;
-    let suffix = 1;
-    while (new RegExp(`declare\\s+${candidate}\\s*=`).test(code)) {
-      suffix += 1;
-      candidate = `${normalizedBase}_${suffix}`;
+    while (
+      Object.prototype.hasOwnProperty.call(uploadedAssets, `img${imageIndex}`) ||
+      new RegExp(`declare\\s+img${imageIndex}\\s*=`).test(code)
+    ) {
+      imageIndex += 1;
     }
 
-    return candidate;
+    return `img${imageIndex}`;
   };
 
   const handleOpenImageUpload = () => {
@@ -396,8 +431,12 @@ function EditorContent() {
         return;
       }
 
-      const variableName = createImageVariableName(file.name);
-      const declarationLine = `declare ${variableName}="${result}"`;
+      const variableName = createImageVariableName();
+      const nextAssets = {
+        ...uploadedAssets,
+        [variableName]: result,
+      };
+      const declarationLine = `declare ${variableName}="${ASSET_TOKEN_PREFIX}${variableName}"`;
       const lines = code.split('\n');
       let declarationInsertIndex = 0;
 
@@ -406,21 +445,10 @@ function EditorContent() {
       }
 
       lines.splice(declarationInsertIndex, 0, declarationLine, '');
-
-      const imageSnippet = [
-        'start',
-        `image "$${variableName}"`,
-        `set alt "${file.name.replace(/"/g, '') || 'Uploaded image'}"`,
-        'set width "96"',
-        'set height "96"',
-        'set borderRadius "999"',
-        'set fit "cover"',
-        'end',
-      ].join('\n');
-
-      const updatedCode = `${lines.join('\n').replace(/\s*$/, '')}\n\n${imageSnippet}\n`;
+      const updatedCode = `${lines.join('\n').replace(/\s*$/, '')}\n`;
+      setUploadedAssets(nextAssets);
       setCode(updatedCode);
-      compileCode(updatedCode);
+      compileCode(updatedCode, nextAssets);
       event.target.value = '';
     };
 

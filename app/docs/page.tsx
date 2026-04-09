@@ -383,6 +383,203 @@ end`}</pre>
         </section>
 
         <section className="docs-section">
+          <h2>How column grouping really works</h2>
+          <p>
+            The renderer does not create a new column section every time the column name changes. It only looks for
+            one thing: a consecutive run of blocks that all contain <code>set column</code>.
+          </p>
+          <p>
+            That means <code>left</code>, <code>right</code>, <code>main</code>, <code>side</code>,
+            <code> photo</code>, and <code>identity</code> are only bucket names inside the same column section. They
+            do not end the section by themselves.
+          </p>
+          <pre className="docs-example">{`Renderer mental model:
+
+1. Read blocks from top to bottom
+2. See a block with set column
+3. Keep collecting every following block that also has set column
+4. Group those collected blocks by column name
+5. Render the result as one multi-column section`}</pre>
+        </section>
+
+        <section className="docs-section">
+          <h2>Scenario 1: Same section, different columns</h2>
+          <p>
+            In this example, all three blocks belong to one single column section because they are consecutive and all
+            have <code>set column</code>. The names <code>left</code> and <code>right</code> only decide which column
+            each block is stacked into.
+          </p>
+          <pre className="docs-example">{`start
+muted "2013 - 2017"
+set column "left"
+set columnWidth "32%"
+end
+
+start
+write ""
+set column "left"
+set columnWidth "32%"
+set height "remaining"
+end
+
+start
+write "$fullName"
+set column "right"
+set columnWidth "68%"
+end`}</pre>
+          <p>
+            Result: one section with two columns. The first two blocks stack inside the left column. The name block
+            stacks inside the right column.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Scenario 2: Why header columns and body columns can collide</h2>
+          <p>
+            This is the classic failure case. To a human, this looks like “header columns first, then body columns”.
+            But to the renderer, it is one uninterrupted column run, so it becomes one large combined flex section.
+          </p>
+          <pre className="docs-example">{`start
+image "$profilePhoto"
+set column "photo"
+set columnWidth "118"
+end
+
+start
+write "$fullName"
+set column "identity"
+set columnWidth "1fr"
+end
+
+start
+write "Work Experience"
+set column "main"
+set columnWidth "66%"
+end
+
+start
+write "Skills"
+set column "side"
+set columnWidth "34%"
+end`}</pre>
+          <p>
+            Because there is no non-column block between the header and the body, the renderer groups
+            <code>photo</code>, <code>identity</code>, <code>main</code>, and <code>side</code> into one section.
+            That is why content can compress, overlap, or feel like it collapses into the wrong place.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Scenario 3: Correctly ending one column section and starting another</h2>
+          <p>
+            To stop the header column group, insert any normal block without <code>set column</code>. A divider is a
+            very common and clean choice.
+          </p>
+          <pre className="docs-example">{`start
+image "$profilePhoto"
+set column "photo"
+set columnWidth "118"
+end
+
+start
+write "$fullName"
+set column "identity"
+set columnWidth "1fr"
+end
+
+start
+draw line
+set color "#d7dde6"
+set weight "1"
+end
+
+start
+write "Work Experience"
+set column "main"
+set columnWidth "66%"
+end
+
+start
+write "Skills"
+set column "side"
+set columnWidth "34%"
+end`}</pre>
+          <p>
+            Now the renderer sees:
+          </p>
+          <div className="docs-list">
+            <div className="docs-row">
+              <strong>Section 1</strong>
+              <span><code>photo</code> + <code>identity</code></span>
+            </div>
+            <div className="docs-row">
+              <strong>Full-width block</strong>
+              <span>divider line</span>
+            </div>
+            <div className="docs-row">
+              <strong>Section 2</strong>
+              <span><code>main</code> + <code>side</code></span>
+            </div>
+          </div>
+          <p>
+            That is exactly how the fixed image header template works now.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Scenario 4: Sidebar with remaining height filler</h2>
+          <p>
+            A <code>height &quot;remaining&quot;</code> block does not create a new section. It simply becomes another
+            block inside the same column group, and it expands inside its own column.
+          </p>
+          <pre className="docs-example">{`start
+write "Education"
+set column "left"
+set columnWidth "32%"
+set columnBackgroundColor "#dbe7f5"
+end
+
+start
+write ""
+set column "left"
+set columnWidth "32%"
+set height "remaining"
+end
+
+start
+write "$fullName"
+set column "right"
+set columnWidth "68%"
+end`}</pre>
+          <p>
+            This still produces one section. The filler stays in the left column and stretches the sidebar, while the
+            name block stays in the right column.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Rule of thumb for columns</h2>
+          <div className="docs-list">
+            <div className="docs-row">
+              <strong>Consecutive column blocks</strong>
+              <span>One section.</span>
+            </div>
+            <div className="docs-row">
+              <strong>Different column names</strong>
+              <span>Different columns inside that same section.</span>
+            </div>
+            <div className="docs-row">
+              <strong>First normal block without set column</strong>
+              <span>Ends the current section.</span>
+            </div>
+            <div className="docs-row">
+              <strong>Next column-tagged run after that</strong>
+              <span>Starts a new section.</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="docs-section">
           <h2>Page-level styling example</h2>
           <pre className="docs-example">{`start
 init page

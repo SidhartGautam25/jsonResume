@@ -28,6 +28,14 @@ const productNotes = [
   },
 ];
 
+const formatTemplateName = (key: string) =>
+  key
+    .split('_')
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+
+const featuredTemplates = Object.entries(templates).slice(0, 6);
+
 export default function Home() {
   return (
     <div className="app-root" style={{ overflow: 'auto' }}>
@@ -81,13 +89,13 @@ export default function Home() {
             <p className="eyebrow">Templates</p>
             <h2>Choose a starting point</h2>
           </div>
-          <Link href="/editor?template=full" className="text-link">
-            Open builder
+          <Link href="/templates" className="text-link">
+            View all templates
           </Link>
         </section>
 
         <div className="gallery-grid">
-          {Object.entries(templates).map(([key, code]) => {
+          {featuredTemplates.map(([key, code]) => {
              const parsedRes = parseCodeToJson(code);
              
              return (
@@ -99,13 +107,19 @@ export default function Home() {
                      </div>
                    </div>
                    <div className="gallery-card-footer">
-                     <h3>{key.charAt(0).toUpperCase() + key.slice(1)} Resume</h3>
+                     <h3>{formatTemplateName(key)}</h3>
                      <p>Click to open in editor</p>
                    </div>
                  </div>
                </Link>
              );
           })}
+        </div>
+
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '22px' }}>
+          <Link href="/templates" className="secondary-link">
+            Browse all templates
+          </Link>
         </div>
 
         <section className="cta-band">
