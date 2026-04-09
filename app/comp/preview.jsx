@@ -137,6 +137,17 @@ const renderLineGroups = (elements, disableLinks) => {
 
 const groupRenderSections = (elements) => {
   const sections = [];
+  const columnStyleMap = {
+    backgroundColor: 'columnBackgroundColor',
+    padding: 'columnPadding',
+    paddingTop: 'columnPaddingTop',
+    paddingBottom: 'columnPaddingBottom',
+    paddingLeft: 'columnPaddingLeft',
+    paddingRight: 'columnPaddingRight',
+    borderWidth: 'columnBorderWidth',
+    borderColor: 'columnBorderColor',
+    borderRadius: 'columnBorderRadius',
+  };
 
   for (let index = 0; index < elements.length; index += 1) {
     const element = elements[index];
@@ -165,12 +176,32 @@ const groupRenderSections = (elements) => {
         const columnConfig = {
           name,
           width: columnElement.styles.columnWidth || null,
+          styles: {
+            backgroundColor: columnElement.styles.columnBackgroundColor || null,
+            padding: columnElement.styles.columnPadding || null,
+            paddingTop: columnElement.styles.columnPaddingTop || null,
+            paddingBottom: columnElement.styles.columnPaddingBottom || null,
+            paddingLeft: columnElement.styles.columnPaddingLeft || null,
+            paddingRight: columnElement.styles.columnPaddingRight || null,
+            borderWidth: columnElement.styles.columnBorderWidth || null,
+            borderColor: columnElement.styles.columnBorderColor || null,
+            borderRadius: columnElement.styles.columnBorderRadius || null,
+          },
           elements: [],
         };
         byName.set(name, columnConfig);
         columns.push(columnConfig);
       }
-      byName.get(name).elements.push(columnElement);
+      const columnConfig = byName.get(name);
+      if (!columnConfig.width && columnElement.styles.columnWidth) {
+        columnConfig.width = columnElement.styles.columnWidth;
+      }
+      Object.entries(columnStyleMap).forEach(([styleKey, elementKey]) => {
+        if (!columnConfig.styles[styleKey] && columnElement.styles[elementKey]) {
+          columnConfig.styles[styleKey] = columnElement.styles[elementKey];
+        }
+      });
+      columnConfig.elements.push(columnElement);
     });
 
     const columnGap = columnElements.find((columnElement) => columnElement.styles?.columnGap)?.styles?.columnGap || '24';
@@ -201,20 +232,56 @@ export const Preview = ({ parsedJson, disableLinks = false }) => {
 
   const pageStyle = convertToReactStyles(parsedJson.pageStyles || {});
   const renderSections = groupRenderSections(parsedJson.elements);
+  const previewContentStyle = {
+    minHeight: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    ...pageStyle,
+  };
 
   return (
-    <div className="preview-content" style={pageStyle}>
+    <div className="preview-content" style={previewContentStyle}>
       {renderSections.map((section, sectionIndex) => {
         if (section.type === 'columns') {
           const normalizedGap = /^\d+$/.test(String(section.gap)) ? `${section.gap}px` : section.gap;
+          const hasRemainingHeight = section.columns.some((column) =>
+            column.elements.some((element) => element.styles?.height === 'remaining')
+          );
           return (
-            <div key={sectionIndex} className="preview-columns" style={{ display: 'flex', alignItems: 'flex-start', gap: normalizedGap }}>
+            <div
+              key={sectionIndex}
+              className="preview-columns"
+              style={{
+                display: 'flex',
+                alignItems: 'stretch',
+                gap: normalizedGap,
+                ...(hasRemainingHeight ? { flex: 1, minHeight: 0 } : {}),
+              }}
+            >
               {section.columns.map((column) => {
                 const width = column.width || '1fr';
                 const normalizedWidth = /^\d+$/.test(String(width)) ? `${width}px` : width;
-                const columnStyle = width === '1fr'
-                  ? { flex: 1, minWidth: 0 }
-                  : { width: normalizedWidth, minWidth: 0, flexShrink: 0 };
+                const isFixedWidth = /^\d+(\.\d+)?(px)?$/.test(String(width));
+                const columnStyle = {
+                  ...(width === '1fr'
+                    ? { flex: 1, minWidth: 0 }
+                    : isFixedWidth
+                      ? { width: normalizedWidth, minWidth: 0, flexShrink: 0 }
+                      : { flexBasis: normalizedWidth, minWidth: 0, flexShrink: 1 }),
+                  display: 'flex',
+                  flexDirection: 'column',
+                  ...convertToReactStyles({
+                    backgroundColor: column.styles.backgroundColor,
+                    padding: column.styles.padding,
+                    paddingTop: column.styles.paddingTop,
+                    paddingBottom: column.styles.paddingBottom,
+                    paddingLeft: column.styles.paddingLeft,
+                    paddingRight: column.styles.paddingRight,
+                    borderWidth: column.styles.borderWidth,
+                    borderColor: column.styles.borderColor,
+                    borderRadius: column.styles.borderRadius,
+                  }),
+                };
                 return (
                   <div key={column.name} className="preview-column" style={columnStyle}>
                     {renderLineGroups(column.elements, disableLinks)}

@@ -39,13 +39,34 @@ const escapeHtml = (value: string) =>
 
 const styleObjectToString = (styles: Record<string, string>) =>
   Object.entries(styles)
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
     .map(([key, value]) => `${toKebabCase(key)}:${value}`)
     .join(';');
 
 const groupRenderSections = (elements: ParsedElement[]) => {
+  const columnStyleMap: Record<string, string> = {
+    backgroundColor: 'columnBackgroundColor',
+    padding: 'columnPadding',
+    paddingTop: 'columnPaddingTop',
+    paddingBottom: 'columnPaddingBottom',
+    paddingLeft: 'columnPaddingLeft',
+    paddingRight: 'columnPaddingRight',
+    borderWidth: 'columnBorderWidth',
+    borderColor: 'columnBorderColor',
+    borderRadius: 'columnBorderRadius',
+  };
   const sections: Array<
     | { type: 'elements'; elements: ParsedElement[] }
-    | { type: 'columns'; columns: Array<{ name: string; width: string | null; elements: ParsedElement[] }>; gap: string }
+    | {
+        type: 'columns';
+        columns: Array<{
+          name: string;
+          width: string | null;
+          styles: Record<string, string | null>;
+          elements: ParsedElement[];
+        }>;
+        gap: string;
+      }
   > = [];
 
   for (let index = 0; index < elements.length; index += 1) {
@@ -66,8 +87,8 @@ const groupRenderSections = (elements: ParsedElement[]) => {
 
     index -= 1;
 
-    const columns: Array<{ name: string; width: string | null; elements: ParsedElement[] }> = [];
-    const byName = new Map<string, { name: string; width: string | null; elements: ParsedElement[] }>();
+    const columns: Array<{ name: string; width: string | null; styles: Record<string, string | null>; elements: ParsedElement[] }> = [];
+    const byName = new Map<string, { name: string; width: string | null; styles: Record<string, string | null>; elements: ParsedElement[] }>();
 
     columnElements.forEach((columnElement) => {
       const name = columnElement.styles.column;
@@ -75,12 +96,35 @@ const groupRenderSections = (elements: ParsedElement[]) => {
         const columnConfig = {
           name,
           width: columnElement.styles.columnWidth || null,
+          styles: {
+            backgroundColor: columnElement.styles.columnBackgroundColor || null,
+            padding: columnElement.styles.columnPadding || null,
+            paddingTop: columnElement.styles.columnPaddingTop || null,
+            paddingBottom: columnElement.styles.columnPaddingBottom || null,
+            paddingLeft: columnElement.styles.columnPaddingLeft || null,
+            paddingRight: columnElement.styles.columnPaddingRight || null,
+            borderWidth: columnElement.styles.columnBorderWidth || null,
+            borderColor: columnElement.styles.columnBorderColor || null,
+            borderRadius: columnElement.styles.columnBorderRadius || null,
+          },
           elements: [],
         };
         byName.set(name, columnConfig);
         columns.push(columnConfig);
       }
-      byName.get(name)?.elements.push(columnElement);
+      const columnConfig = byName.get(name);
+      if (!columnConfig) {
+        return;
+      }
+      if (!columnConfig.width && columnElement.styles.columnWidth) {
+        columnConfig.width = columnElement.styles.columnWidth;
+      }
+      Object.entries(columnStyleMap).forEach(([styleKey, elementKey]) => {
+        if (!columnConfig.styles[styleKey] && columnElement.styles[elementKey]) {
+          columnConfig.styles[styleKey] = columnElement.styles[elementKey];
+        }
+      });
+      columnConfig.elements.push(columnElement);
     });
 
     const columnGap = columnElements.find((columnElement) => columnElement.styles?.columnGap)?.styles?.columnGap || '24';
@@ -187,15 +231,32 @@ const renderHtmlDocument = (parsedJson: ParsedResume) => {
   const html = renderSections.map((section) => {
     if (section.type === 'columns') {
       const normalizedGap = /^\d+(\.\d+)?$/.test(String(section.gap)) ? `${section.gap}px` : section.gap;
+      const hasRemainingHeight = section.columns.some((column) =>
+        column.elements.some((element) => element.styles?.height === 'remaining')
+      );
       const columnsHtml = section.columns.map((column) => {
         const width = column.width || '1fr';
         const normalizedWidth = /^\d+(\.\d+)?$/.test(String(width)) ? `${width}px` : width;
+        const isFixedWidth = /^\d+(\.\d+)?(px)?$/.test(String(width));
+        const containerStyle = styleObjectToString(convertToReactStyles({
+          backgroundColor: column.styles.backgroundColor || '',
+          padding: column.styles.padding || '',
+          paddingTop: column.styles.paddingTop || '',
+          paddingBottom: column.styles.paddingBottom || '',
+          paddingLeft: column.styles.paddingLeft || '',
+          paddingRight: column.styles.paddingRight || '',
+          borderWidth: column.styles.borderWidth || '',
+          borderColor: column.styles.borderColor || '',
+          borderRadius: column.styles.borderRadius || '',
+        } as Record<string, string>));
         const columnStyle = width === '1fr'
-          ? 'flex:1;min-width:0;'
-          : `width:${normalizedWidth};min-width:0;flex-shrink:0;`;
+          ? `flex:1;min-width:0;display:flex;flex-direction:column;${containerStyle}`
+          : isFixedWidth
+            ? `width:${normalizedWidth};min-width:0;flex-shrink:0;display:flex;flex-direction:column;${containerStyle}`
+            : `flex-basis:${normalizedWidth};min-width:0;flex-shrink:1;display:flex;flex-direction:column;${containerStyle}`;
         return `<div style="${columnStyle}">${renderLineGroups(column.elements)}</div>`;
       }).join('');
-      return `<div style="display:flex;align-items:flex-start;gap:${normalizedGap}">${columnsHtml}</div>`;
+      return `<div style="display:flex;align-items:stretch;gap:${normalizedGap};${hasRemainingHeight ? 'flex:1;min-height:0;' : ''}">${columnsHtml}</div>`;
     }
 
     return renderLineGroups(section.elements);
@@ -212,7 +273,7 @@ const renderHtmlDocument = (parsedJson: ParsedResume) => {
     <style>
       body { margin: 0; padding: 32px; background: #f8fafc; font-family: Arial, sans-serif; }
       .page { max-width: 860px; margin: 0 auto; background: white; padding: 28px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); }
-      .preview-content { color: #111827; font-family: Arial, sans-serif; font-size: 14px; line-height: 1.45; }
+      .preview-content { color: #111827; font-family: Arial, sans-serif; font-size: 14px; line-height: 1.45; min-height: 100%; display: flex; flex-direction: column; }
       .preview-element .dot { margin-right: 8px; font-weight: 700; }
       .preview-muted { color: #64748b; }
       .preview-headline-inline { display:inline-block; font-family: Arial, Helvetica, sans-serif; font-size: 22px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }

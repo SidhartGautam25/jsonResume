@@ -5,7 +5,14 @@ export const convertToReactStyles = (styles) => {
   if (!styles) return reactStyles;
 
   Object.entries(styles).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === '') {
+      return;
+    }
+
     switch (key) {
+      case 'backgroundColor':
+        reactStyles.backgroundColor = value;
+        break;
       case 'color':
         reactStyles.color = value;
         break;
@@ -33,6 +40,15 @@ export const convertToReactStyles = (styles) => {
       case 'padding':
         reactStyles.padding = `${value}px`;
         break;
+      case 'bleed': {
+        const bleedValue = Number(value);
+        if (!Number.isNaN(bleedValue)) {
+          reactStyles.margin = `-${bleedValue}px`;
+          reactStyles.width = `calc(100% + ${bleedValue * 2}px)`;
+          reactStyles.minHeight = `calc(100% + ${bleedValue * 2}px)`;
+        }
+        break;
+      }
       case 'spaceFromTop':
         reactStyles.marginTop = `${value}px`;
         break;
@@ -61,7 +77,12 @@ export const convertToReactStyles = (styles) => {
         reactStyles.width = pixelOrRaw(value);
         break;
       case 'height':
-        reactStyles.height = pixelOrRaw(value);
+        if (value === 'remaining') {
+          reactStyles.flex = '1 1 0';
+          reactStyles.minHeight = '0';
+        } else {
+          reactStyles.height = pixelOrRaw(value);
+        }
         break;
       case 'maxWidth':
         reactStyles.maxWidth = pixelOrRaw(value);

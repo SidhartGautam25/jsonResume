@@ -52,6 +52,7 @@ const commandRows = [
 const styleRows = [
   ["size", "Font size in pixels."],
   ["color", "Text or line color."],
+  ["backgroundColor", "Set a background color on a specific block or on the page preset."],
   ["fontWeight", "Weight for headings or emphasized text."],
   ["lineHeight", "Line height for denser or more breathable copy."],
   ["fontFamily", "Useful for matching serif or sans-serif resume styles."],
@@ -66,6 +67,9 @@ const styleRows = [
   ["columnWidth", "Set the width of a column block, such as 60% or 36%."],
   ["columnGap", "Set the gap between columns in a grouped multi-column layout."],
   ["columnAlign", "Control cross-axis alignment inside same-line grouped blocks when needed."],
+  ["columnBackgroundColor", "Paint the background of an entire column container, useful for sidebars."],
+  ["columnPadding / columnPaddingTop / columnPaddingBottom / columnPaddingLeft / columnPaddingRight", "Add inner spacing to an entire column container."],
+  ["columnBorderWidth / columnBorderColor / columnBorderRadius", "Style the outer frame of a whole column container."],
   ["hangingIndent", "Optional bullet-wrap alignment. When set on a dot-bullet block, wrapped lines align under the text instead of under the bullet."],
   ["paddingLeft / paddingRight", "Useful for inset headers or bordered content blocks."],
   ["paddingTop / paddingBottom", "Add inner spacing without changing line grouping."],
@@ -267,6 +271,25 @@ end`}</pre>
         </section>
 
         <section className="docs-section">
+          <h2>Sidebar background example</h2>
+          <pre className="docs-example">{`start
+write "Education"
+design sectionHeading
+set column "left"
+set columnWidth "34%"
+set columnBackgroundColor "#ececec"
+set columnPaddingTop "24"
+set columnPaddingBottom "24"
+set columnPaddingLeft "20"
+set columnPaddingRight "20"
+end`}</pre>
+          <p>
+            Column background styles apply to the whole grouped column, not just to one block, which makes them ideal
+            for sidebar resume layouts.
+          </p>
+        </section>
+
+        <section className="docs-section">
           <h2>Optional hanging indent for bullets</h2>
           <p>
             By default, bullet lines wrap naturally with the bullet inline. If you want wrapped lines to align
@@ -325,7 +348,8 @@ end`}</pre>
             Start with <code>professional</code> for a balanced software-engineering resume,
             <code> executive</code> for leadership-heavy profiles, <code>ats_pro</code> for simpler ATS-friendly
             structure, <code>studio_pro</code> for a more design-forward presentation, and
-            <code> community_intern_two_column</code> for a two-column student/community resume layout.
+            <code> community_intern_two_column</code> for a two-column student/community resume layout. Use
+            <code> marketing_sidebar</code> for a sidebar-style resume with column background treatment.
           </p>
         </section>
 

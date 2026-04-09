@@ -58,6 +58,22 @@ const createElement = (blockType) => ({
   gap: null,
 });
 
+const COLUMN_STYLE_KEYS = [
+  'column',
+  'columnWidth',
+  'columnGap',
+  'columnAlign',
+  'columnBackgroundColor',
+  'columnPadding',
+  'columnPaddingTop',
+  'columnPaddingBottom',
+  'columnPaddingLeft',
+  'columnPaddingRight',
+  'columnBorderWidth',
+  'columnBorderColor',
+  'columnBorderRadius',
+];
+
 export const parseCodeToJson = (code) => {
   const { variables, codeWithoutDeclarations } = collectDeclaredVariables(code);
 
@@ -194,6 +210,31 @@ export const parseCodeToJson = (code) => {
 
     finalStyles = { ...finalStyles, ...element.styles };
     element.styles = finalStyles;
+    return element;
+  });
+
+  jsonOutput.elements = jsonOutput.elements.map((element, index, elements) => {
+    if (!element.isInline || element.styles.column) {
+      return element;
+    }
+
+    const previousElement = elements[index - 1];
+    if (!previousElement?.styles?.column) {
+      return element;
+    }
+
+    const inheritedColumnStyles = {};
+    COLUMN_STYLE_KEYS.forEach((key) => {
+      if (previousElement.styles[key] !== undefined) {
+        inheritedColumnStyles[key] = previousElement.styles[key];
+      }
+    });
+
+    element.styles = {
+      ...inheritedColumnStyles,
+      ...element.styles,
+    };
+
     return element;
   });
 
