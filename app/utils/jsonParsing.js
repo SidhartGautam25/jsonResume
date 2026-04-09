@@ -1,4 +1,5 @@
 const DECLARE_REGEX = /^declare\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.+)$/;
+const ASSET_TOKEN_PREFIX = '@asset:';
 
 const stripWrappingQuotes = (value) => {
   const trimmedValue = value.trim();
@@ -13,7 +14,16 @@ const stripWrappingQuotes = (value) => {
   return trimmedValue;
 };
 
-const collectDeclaredVariables = (code) => {
+const resolveDeclaredAssetValue = (value, assets) => {
+  if (!value.startsWith(ASSET_TOKEN_PREFIX)) {
+    return value;
+  }
+
+  const assetKey = value.slice(ASSET_TOKEN_PREFIX.length);
+  return assets[assetKey] || value;
+};
+
+const collectDeclaredVariables = (code, assets = {}) => {
   const variables = {};
   const remainingLines = [];
 
@@ -27,7 +37,7 @@ const collectDeclaredVariables = (code) => {
     }
 
     const [, variableName, rawValue] = declareMatch;
-    variables[variableName] = stripWrappingQuotes(rawValue);
+    variables[variableName] = resolveDeclaredAssetValue(stripWrappingQuotes(rawValue), assets);
   });
 
   return {
@@ -54,12 +64,29 @@ const createElement = (blockType) => ({
   styles: {},
   isInline: blockType === 'startFromSameLine',
   url: null,
+  src: null,
   layout: null,
   gap: null,
 });
 
-export const parseCodeToJson = (code) => {
-  const { variables, codeWithoutDeclarations } = collectDeclaredVariables(code);
+const COLUMN_STYLE_KEYS = [
+  'column',
+  'columnWidth',
+  'columnGap',
+  'columnAlign',
+  'columnBackgroundColor',
+  'columnPadding',
+  'columnPaddingTop',
+  'columnPaddingBottom',
+  'columnPaddingLeft',
+  'columnPaddingRight',
+  'columnBorderWidth',
+  'columnBorderColor',
+  'columnBorderRadius',
+];
+
+export const parseCodeToJson = (code, assets = {}) => {
+  const { variables, codeWithoutDeclarations } = collectDeclaredVariables(code, assets);
 
   const blocks = codeWithoutDeclarations
     .split(/(?=^startFromSameLine\b|^start\b)/gm)
@@ -68,6 +95,7 @@ export const parseCodeToJson = (code) => {
   const jsonOutput = {
     definitions: {},
     variables,
+    pageStyles: {},
     elements: [],
   };
 
@@ -108,6 +136,8 @@ export const parseCodeToJson = (code) => {
 
         if (definitionName === 'global') {
           globalStyles = definitionStyles;
+        } else if (definitionName === 'page') {
+          jsonOutput.pageStyles = definitionStyles;
         } else {
           jsonOutput.definitions[definitionName] = definitionStyles;
         }
@@ -125,6 +155,13 @@ export const parseCodeToJson = (code) => {
         case 'write':
           element.content.push({ type: 'text', value: args });
           break;
+        case 'image':
+          element.type = 'img';
+          element.src = args;
+          break;
+        case 'headline':
+          element.content.push({ type: 'headline', value: args });
+          break;
         case 'strong':
           element.content.push({ type: 'strong', value: args });
           break;
@@ -137,6 +174,8 @@ export const parseCodeToJson = (code) => {
         case 'draw':
           if (args === 'line') {
             element.type = 'hr';
+          } else if (args === 'bar') {
+            element.type = 'vr';
           }
           break;
         case 'add':
@@ -144,6 +183,8 @@ export const parseCodeToJson = (code) => {
             element.content.push({ type: 'dot' });
           } else if (args === 'pipe') {
             element.content.push({ type: 'pipe' });
+          } else if (args === 'break') {
+            element.content.push({ type: 'break' });
           }
           break;
         case 'set': {
@@ -184,6 +225,31 @@ export const parseCodeToJson = (code) => {
 
     finalStyles = { ...finalStyles, ...element.styles };
     element.styles = finalStyles;
+    return element;
+  });
+
+  jsonOutput.elements = jsonOutput.elements.map((element, index, elements) => {
+    if (!element.isInline || element.styles.column) {
+      return element;
+    }
+
+    const previousElement = elements[index - 1];
+    if (!previousElement?.styles?.column) {
+      return element;
+    }
+
+    const inheritedColumnStyles = {};
+    COLUMN_STYLE_KEYS.forEach((key) => {
+      if (previousElement.styles[key] !== undefined) {
+        inheritedColumnStyles[key] = previousElement.styles[key];
+      }
+    });
+
+    element.styles = {
+      ...inheritedColumnStyles,
+      ...element.styles,
+    };
+
     return element;
   });
 

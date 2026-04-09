@@ -14,6 +14,9 @@ export function SiteHeader({ showLaunchButton = true }: SiteHeaderProps) {
         <Link href="/" className="nav-link">
           Home
         </Link>
+        <Link href="/templates" className="nav-link">
+          Templates
+        </Link>
         <Link href="/docs" className="nav-link">
           Docs
         </Link>

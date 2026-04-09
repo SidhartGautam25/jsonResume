@@ -31,15 +31,20 @@ const commandRows = [
   ["start / end", "Create a new block that renders on a new line."],
   ["startFromSameLine", "Attach the block to the previous line so you can build left-right resume rows."],
   ["init", "Define a named style preset such as section headers, metadata, or role titles."],
+  ["init page", "Define page-level styles such as border, padding, and other full-resume presentation rules."],
   ["design", "Apply a named preset to the current block."],
   ["write", "Render normal text."],
+  ["image", "Render an image from a URL or uploaded data URL. Useful for profile photos, logos, and visual sidebars."],
+  ["headline", "Render a larger in-block heading line, useful for stacked classic resume headers."],
   ["strong", "Render emphasized text for titles, company names, or section-leading phrases."],
   ["muted", "Render lower-emphasis metadata such as dates, location, email, and supporting labels."],
   ["badge", "Render pill-like tags for skills, capabilities, and focus areas."],
   ["set_url", "Turn the current block into a clickable link."],
   ['draw "line"', "Render a divider line between major resume sections."],
+  ['draw "bar"', "Render a vertical bar, useful for classic left-accent headers."],
   ['add "dot"', "Insert a bullet marker before the following content."],
   ['add "pipe"', "Insert an inline separator for compact metadata rows."],
+  ['add "break"', "Insert a line break inside the current block."],
   ["layout", "Control same-line distribution with start, center, end, between, or around."],
   ["gap", "Add horizontal space between items grouped on the same line."],
   ["align", "Control text alignment inside a single block."],
@@ -48,8 +53,11 @@ const commandRows = [
 const styleRows = [
   ["size", "Font size in pixels."],
   ["color", "Text or line color."],
+  ["backgroundColor", "Set a background color on a specific block or on the page preset."],
+  ["fit", "For image blocks, control object-fit such as cover or contain."],
   ["fontWeight", "Weight for headings or emphasized text."],
   ["lineHeight", "Line height for denser or more breathable copy."],
+  ["fontFamily", "Useful for matching serif or sans-serif resume styles."],
   ["letterSpacing", "Useful for uppercase section labels."],
   ["decoration", "Use underline for links or intentional emphasis."],
   ["transform", "Use uppercase or lowercase for presentation control."],
@@ -57,8 +65,23 @@ const styleRows = [
   ["spaceFromBottom", "Bottom spacing in pixels."],
   ["spaceFromLeft", "Left margin in pixels."],
   ["spaceFromRight", "Right margin in pixels."],
+  ["column", "Assign a block to a named column such as left or right inside a multi-column section."],
+  ["columnWidth", "Set the width of a column block, such as 60% or 36%."],
+  ["columnGap", "Set the gap between columns in a grouped multi-column layout."],
+  ["columnAlign", "Control cross-axis alignment inside same-line grouped blocks when needed."],
+  ["columnBackgroundColor", "Paint the background of an entire column container, useful for sidebars."],
+  ["columnPadding / columnPaddingTop / columnPaddingBottom / columnPaddingLeft / columnPaddingRight", "Add inner spacing to an entire column container."],
+  ["columnBorderWidth / columnBorderColor / columnBorderRadius", "Style the outer frame of a whole column container."],
+  ["hangingIndent", "Optional bullet-wrap alignment. When set on a dot-bullet block, wrapped lines align under the text instead of under the bullet."],
+  ["paddingLeft / paddingRight", "Useful for inset headers or bordered content blocks."],
+  ["paddingTop / paddingBottom", "Add inner spacing without changing line grouping."],
+  ["padding", "Apply overall inner spacing to a page-level or block-level container."],
   ["width / maxWidth", "Useful when constraining longer summary or project lines."],
+  ["height", 'Useful for vertical bars, fixed accents, or `set height "remaining"` filler blocks.'],
+  ["borderWidth / borderColor", "Useful for page borders and stronger classic layouts."],
+  ["borderLeftWidth / borderLeftColor", "Create left-accent headers or bordered blocks."],
   ["weight", "Border thickness for draw line blocks."],
+  ["bleed", "Page-level option that lets a template extend beyond the default paper padding for edge-to-edge layouts."],
 ];
 
 export default function DocsPage() {
@@ -97,6 +120,15 @@ export default function DocsPage() {
             A resume is built from blocks. Each block starts with <code>start</code> or
             <code> startFromSameLine</code>, contains one or more commands, and closes with <code>end</code>.
             Variables declared at the top can be reused throughout the file.
+          </p>
+          <p>
+            Most resumes are composed from three ideas: reusable declared values, style presets created with
+            <code> init</code>, and content blocks that mix commands like <code>strong</code>, <code>muted</code>,
+            <code> badge</code>, <code>draw</code>, and <code>add</code>.
+          </p>
+          <p>
+            When you need advanced layout, you can also define page-level styling with <code>init page</code> and
+            assign blocks into named columns using <code>set column</code> and <code>set columnWidth</code>.
           </p>
         </section>
 
@@ -194,11 +226,453 @@ end`}</pre>
         </section>
 
         <section className="docs-section">
+          <h2>Two-column layout example</h2>
+          <p>
+            To build a true two-column resume section, assign consecutive blocks to a left and right column. The
+            renderer groups those blocks together and keeps each column stacked independently.
+          </p>
+          <pre className="docs-example">{`start
+write "Projects"
+design sectionHeading
+set column "left"
+set columnWidth "60%"
+set columnGap "24"
+end
+
+start
+write "Career Objective"
+design sectionHeading
+set column "right"
+set columnWidth "36%"
+end
+
+start
+write "Project content continues in the left rail..."
+set column "left"
+set columnWidth "60%"
+end
+
+start
+write "Objective content continues in the right rail..."
+set column "right"
+set columnWidth "36%"
+end`}</pre>
+        </section>
+
+        <section className="docs-section">
+          <h2>Column header with photo</h2>
+          <p>
+            A strong pattern is to use columns only for the header area. Put the image in a narrow left column and
+            stack the name, title, and contact line in a wider right column. After that, switch back to normal blocks.
+          </p>
+          <pre className="docs-example">{`declare profilePhoto="https://example.com/photo.jpg"
+declare fullName="Ethan Collins"
+declare title="Engineering Manager"
+declare email="ethan@example.com"
+
+start
+image "$profilePhoto"
+set column "photo"
+set columnWidth "118"
+set columnGap "20"
+set width "112"
+set height "112"
+set borderRadius "20"
+set fit "cover"
+end
+
+start
+write "$fullName"
+set column "identity"
+set columnWidth "1fr"
+set size "30"
+end
+
+start
+write "$title"
+set column "identity"
+set columnWidth "1fr"
+set size "17"
+end
+
+start
+muted "$email"
+set column "identity"
+set columnWidth "1fr"
+end
+
+start
+draw line
+set color "#cbd5e1"
+end`}</pre>
+          <p>
+            The line block is not tagged with a column, so the column section ends there and the resume continues in
+            the normal single-column flow.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Fixed sidebar plus flexible content</h2>
+          <p>
+            You can mix a fixed-width sidebar with a fluid content area. This is useful for photo rails, education
+            sidebars, or link panels.
+          </p>
+          <pre className="docs-example">{`start
+write "Sidebar heading"
+set column "left"
+set columnWidth "220"
+set columnGap "0"
+set columnBackgroundColor "#dbe7f5"
+set columnPaddingTop "24"
+set columnPaddingBottom "24"
+set columnPaddingLeft "20"
+set columnPaddingRight "20"
+end
+
+start
+write "Main content heading"
+set column "right"
+set columnWidth "1fr"
+set columnBackgroundColor "#ffffff"
+set columnPaddingTop "24"
+set columnPaddingBottom "24"
+set columnPaddingLeft "28"
+set columnPaddingRight "28"
+end`}</pre>
+        </section>
+
+        <section className="docs-section">
+          <h2>Fill the rest of a sidebar</h2>
+          <p>
+            When a sidebar should visually run to the bottom of the page, add a final empty block and set its height
+            to <code>&quot;remaining&quot;</code>.
+          </p>
+          <pre className="docs-example">{`start
+write ""
+set column "left"
+set columnWidth "31%"
+set height "remaining"
+end`}</pre>
+          <p>
+            This works best when that column already has a <code>columnBackgroundColor</code>, because the filler block
+            extends the visual rail without forcing you to guess a pixel height.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Return to normal flow after columns</h2>
+          <p>
+            Columns only apply to one consecutive run of blocks. As soon as you create a block without
+            <code> set column</code>, the layout returns to the regular full-width flow.
+          </p>
+          <pre className="docs-example">{`start
+write "Left"
+set column "left"
+set columnWidth "40%"
+end
+
+start
+write "Right"
+set column "right"
+set columnWidth "60%"
+end
+
+start
+write "This block is back in the normal flow."
+end`}</pre>
+        </section>
+
+        <section className="docs-section">
+          <h2>How column grouping really works</h2>
+          <p>
+            The renderer does not create a new column section every time the column name changes. It only looks for
+            one thing: a consecutive run of blocks that all contain <code>set column</code>.
+          </p>
+          <p>
+            That means <code>left</code>, <code>right</code>, <code>main</code>, <code>side</code>,
+            <code> photo</code>, and <code>identity</code> are only bucket names inside the same column section. They
+            do not end the section by themselves.
+          </p>
+          <pre className="docs-example">{`Renderer mental model:
+
+1. Read blocks from top to bottom
+2. See a block with set column
+3. Keep collecting every following block that also has set column
+4. Group those collected blocks by column name
+5. Render the result as one multi-column section`}</pre>
+        </section>
+
+        <section className="docs-section">
+          <h2>Scenario 1: Same section, different columns</h2>
+          <p>
+            In this example, all three blocks belong to one single column section because they are consecutive and all
+            have <code>set column</code>. The names <code>left</code> and <code>right</code> only decide which column
+            each block is stacked into.
+          </p>
+          <pre className="docs-example">{`start
+muted "2013 - 2017"
+set column "left"
+set columnWidth "32%"
+end
+
+start
+write ""
+set column "left"
+set columnWidth "32%"
+set height "remaining"
+end
+
+start
+write "$fullName"
+set column "right"
+set columnWidth "68%"
+end`}</pre>
+          <p>
+            Result: one section with two columns. The first two blocks stack inside the left column. The name block
+            stacks inside the right column.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Scenario 2: Why header columns and body columns can collide</h2>
+          <p>
+            This is the classic failure case. To a human, this looks like “header columns first, then body columns”.
+            But to the renderer, it is one uninterrupted column run, so it becomes one large combined flex section.
+          </p>
+          <pre className="docs-example">{`start
+image "$profilePhoto"
+set column "photo"
+set columnWidth "118"
+end
+
+start
+write "$fullName"
+set column "identity"
+set columnWidth "1fr"
+end
+
+start
+write "Work Experience"
+set column "main"
+set columnWidth "66%"
+end
+
+start
+write "Skills"
+set column "side"
+set columnWidth "34%"
+end`}</pre>
+          <p>
+            Because there is no non-column block between the header and the body, the renderer groups
+            <code>photo</code>, <code>identity</code>, <code>main</code>, and <code>side</code> into one section.
+            That is why content can compress, overlap, or feel like it collapses into the wrong place.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Scenario 3: Correctly ending one column section and starting another</h2>
+          <p>
+            To stop the header column group, insert any normal block without <code>set column</code>. A divider is a
+            very common and clean choice.
+          </p>
+          <pre className="docs-example">{`start
+image "$profilePhoto"
+set column "photo"
+set columnWidth "118"
+end
+
+start
+write "$fullName"
+set column "identity"
+set columnWidth "1fr"
+end
+
+start
+draw line
+set color "#d7dde6"
+set weight "1"
+end
+
+start
+write "Work Experience"
+set column "main"
+set columnWidth "66%"
+end
+
+start
+write "Skills"
+set column "side"
+set columnWidth "34%"
+end`}</pre>
+          <p>
+            Now the renderer sees:
+          </p>
+          <div className="docs-list">
+            <div className="docs-row">
+              <strong>Section 1</strong>
+              <span><code>photo</code> + <code>identity</code></span>
+            </div>
+            <div className="docs-row">
+              <strong>Full-width block</strong>
+              <span>divider line</span>
+            </div>
+            <div className="docs-row">
+              <strong>Section 2</strong>
+              <span><code>main</code> + <code>side</code></span>
+            </div>
+          </div>
+          <p>
+            That is exactly how the fixed image header template works now.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Scenario 4: Sidebar with remaining height filler</h2>
+          <p>
+            A <code>height &quot;remaining&quot;</code> block does not create a new section. It simply becomes another
+            block inside the same column group, and it expands inside its own column.
+          </p>
+          <pre className="docs-example">{`start
+write "Education"
+set column "left"
+set columnWidth "32%"
+set columnBackgroundColor "#dbe7f5"
+end
+
+start
+write ""
+set column "left"
+set columnWidth "32%"
+set height "remaining"
+end
+
+start
+write "$fullName"
+set column "right"
+set columnWidth "68%"
+end`}</pre>
+          <p>
+            This still produces one section. The filler stays in the left column and stretches the sidebar, while the
+            name block stays in the right column.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Rule of thumb for columns</h2>
+          <div className="docs-list">
+            <div className="docs-row">
+              <strong>Consecutive column blocks</strong>
+              <span>One section.</span>
+            </div>
+            <div className="docs-row">
+              <strong>Different column names</strong>
+              <span>Different columns inside that same section.</span>
+            </div>
+            <div className="docs-row">
+              <strong>First normal block without set column</strong>
+              <span>Ends the current section.</span>
+            </div>
+            <div className="docs-row">
+              <strong>Next column-tagged run after that</strong>
+              <span>Starts a new section.</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="docs-section">
+          <h2>Page-level styling example</h2>
+          <pre className="docs-example">{`start
+init page
+set borderWidth "4"
+set borderColor "#111111"
+set padding "22"
+end`}</pre>
+          <p>
+            Use page styles when a template needs a visible outer frame, tighter inner margins, or a more deliberate
+            paper treatment.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Sidebar background example</h2>
+          <pre className="docs-example">{`start
+write "Education"
+design sectionHeading
+set column "left"
+set columnWidth "34%"
+set columnBackgroundColor "#ececec"
+set columnPaddingTop "24"
+set columnPaddingBottom "24"
+set columnPaddingLeft "20"
+set columnPaddingRight "20"
+end`}</pre>
+          <p>
+            Column background styles apply to the whole grouped column, not just to one block, which makes them ideal
+            for sidebar resume layouts.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Optional hanging indent for bullets</h2>
+          <p>
+            By default, bullet lines wrap naturally with the bullet inline. If you want wrapped lines to align
+            under the first word instead of under the bullet, add <code>{'set hangingIndent "18"'}</code> or another
+            width that fits your layout.
+          </p>
+          <pre className="docs-example">{`start
+add "dot"
+write "Implemented a new stormwater retention plan for the City of Montreal, resulting in the creation of additional land for development."
+set hangingIndent "18"
+set spaceFromLeft "14"
+end`}</pre>
+          <p>
+            This is opt-in and only affects blocks that contain <code>{'add "dot"'}</code>. Existing templates and
+            older bullet blocks continue to work exactly the same unless you explicitly set the property.
+          </p>
+        </section>
+
+        <section className="docs-section">
+          <h2>Block behavior details</h2>
+          <div className="docs-list">
+            <div className="docs-row">
+              <strong>Single block</strong>
+              <span>
+                A normal <code>start</code> block renders on its own line and is best for summary text, bullets,
+                and section titles.
+              </span>
+            </div>
+            <div className="docs-row">
+              <strong>Inline block</strong>
+              <span>
+                A <code>startFromSameLine</code> block joins the previous line group. Use it for right-aligned
+                company/date pairs, compact metadata, and tag rows.
+              </span>
+            </div>
+            <div className="docs-row">
+              <strong>Layout + gap</strong>
+              <span>
+                <code>layout</code> controls how items in the same line group are distributed, while <code>gap</code>
+                adds breathing room between them.
+              </span>
+            </div>
+            <div className="docs-row">
+              <strong>Preset merge order</strong>
+              <span>
+                Global styles apply first, then preset styles from <code>design</code>, then block-level
+                <code>set</code> values override both.
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <section className="docs-section">
           <h2>Working with templates</h2>
           <p>
             Start with <code>professional</code> for a balanced software-engineering resume,
             <code> executive</code> for leadership-heavy profiles, <code>ats_pro</code> for simpler ATS-friendly
-            structure, and <code>studio_pro</code> for a more design-forward presentation.
+            structure, <code>studio_pro</code> for a more design-forward presentation, and
+            <code> community_intern_two_column</code> for a two-column student/community resume layout. Use
+            <code> marketing_sidebar</code> for a sidebar-style resume with column background treatment.
           </p>
         </section>
 

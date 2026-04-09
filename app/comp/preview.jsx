@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client'
 import React from 'react';
 // import { convertToReactStyles } from "../../../codeResume/client/src/utils/design";
@@ -9,6 +10,8 @@ import { convertToReactStyles } from "../utils/design";
  */
 const ElementRenderer = ({ element, disableLinks }) => {
   const style = convertToReactStyles(element.styles || {});
+  const hangingIndent = element.styles?.hangingIndent;
+  const hasBulletDot = element.content?.some((item) => item.type === 'dot');
 
   // Handle HR tags separately
   if (element.type === 'hr') {
@@ -24,18 +27,70 @@ const ElementRenderer = ({ element, disableLinks }) => {
     return <hr style={hrStyle} />;
   }
 
-  // Build the main content of the element
-  const content = (
+  if (element.type === 'vr') {
+    const barStyle = {
+      ...style,
+      width: style.width || '4px',
+      height: style.height || '72px',
+      backgroundColor: style.color || '#111111',
+      flexShrink: 0,
+    };
+    return <div style={barStyle} className="preview-vertical-bar" />;
+  }
+
+  if (element.type === 'img') {
+    const imageNode = (
+      <img
+        src={element.src || ''}
+        alt={element.styles?.alt || 'Resume image'}
+        style={{ display: 'block', maxWidth: '100%', ...style }}
+        className="preview-image"
+      />
+    );
+
+    if (element.url && !disableLinks) {
+      return <a href={element.url} target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>{imageNode}</a>;
+    }
+
+    return imageNode;
+  }
+
+  const renderContentItem = (item, i) => {
+    if (item.type === 'text') return <span key={i}>{item.value}</span>;
+    if (item.type === 'headline') return <span key={i} className="preview-headline-inline">{item.value}</span>;
+    if (item.type === 'strong') return <strong key={i} className="preview-strong">{item.value}</strong>;
+    if (item.type === 'muted') return <span key={i} className="preview-muted">{item.value}</span>;
+    if (item.type === 'badge') return <span key={i} className="preview-badge">{item.value}</span>;
+    if (item.type === 'dot') return <span key={i} className="dot">•</span>;
+    if (item.type === 'pipe') return <span key={i} className="preview-pipe">|</span>;
+    if (item.type === 'break') return <br key={i} />;
+    return null;
+  };
+
+  const content = hangingIndent && hasBulletDot ? (() => {
+    const dotIndex = element.content.findIndex((item) => item.type === 'dot');
+    const beforeDot = element.content.slice(0, dotIndex);
+    const afterDot = element.content.slice(dotIndex + 1);
+    const indentValue = /^\d+(\.\d+)?$/.test(String(hangingIndent)) ? `${hangingIndent}px` : hangingIndent;
+
+    return (
+      <div style={style} className="preview-element preview-hanging-indent">
+        {beforeDot.length > 0 ? (
+          <div className="preview-inline-prefix">
+            {beforeDot.map(renderContentItem)}
+          </div>
+        ) : null}
+        <div className="preview-hanging-row">
+          <span className="dot preview-hanging-dot" style={{ width: indentValue, minWidth: indentValue }}>•</span>
+          <div className="preview-hanging-text">
+            {afterDot.map((item, i) => renderContentItem(item, i + dotIndex + 1))}
+          </div>
+        </div>
+      </div>
+    );
+  })() : (
     <div style={style} className="preview-element">
-      {element.content?.map((item, i) => {
-        if (item.type === 'text') return <span key={i}>{item.value}</span>;
-        if (item.type === 'strong') return <strong key={i} className="preview-strong">{item.value}</strong>;
-        if (item.type === 'muted') return <span key={i} className="preview-muted">{item.value}</span>;
-        if (item.type === 'badge') return <span key={i} className="preview-badge">{item.value}</span>;
-        if (item.type === 'dot') return <span key={i} className="dot">•</span>;
-        if (item.type === 'pipe') return <span key={i} className="preview-pipe">|</span>;
-        return null;
-      })}
+      {element.content?.map(renderContentItem)}
     </div>
   );
 
@@ -47,6 +102,143 @@ const ElementRenderer = ({ element, disableLinks }) => {
   return content;
 };
 
+const renderLineGroups = (elements, disableLinks) => {
+  const groupedLines = elements.reduce((acc, element) => {
+    if (element.isInline && acc.length > 0) {
+      acc[acc.length - 1].push(element);
+    } else {
+      acc.push([element]);
+    }
+    return acc;
+  }, []);
+
+  return groupedLines.map((lineGroup, index) => {
+    const lineLayout = lineGroup.find((element) => element.layout)?.layout || 'between';
+    const lineGap = lineGroup.find((element) => element.gap)?.gap || '0';
+    const lineAlign = lineGroup.find((element) => element.styles?.columnAlign)?.styles?.columnAlign || 'baseline';
+    const justifyContentMap = {
+      start: 'flex-start',
+      center: 'center',
+      end: 'flex-end',
+      between: 'space-between',
+      around: 'space-around',
+    };
+    const alignItemsMap = {
+      start: 'flex-start',
+      center: 'center',
+      end: 'flex-end',
+      baseline: 'baseline',
+    };
+
+    if (lineGroup.length > 1) {
+      return (
+        <div
+          key={index}
+          style={{
+            display: 'flex',
+            justifyContent: justifyContentMap[lineLayout] || 'space-between',
+            alignItems: alignItemsMap[lineAlign] || 'baseline',
+            gap: /^\d+$/.test(String(lineGap)) ? `${lineGap}px` : lineGap,
+            flexWrap: 'wrap',
+          }}
+        >
+          {lineGroup.map((element, elIndex) => (
+            <ElementRenderer key={elIndex} element={element} disableLinks={disableLinks} />
+          ))}
+        </div>
+      );
+    }
+
+    return <ElementRenderer key={index} element={lineGroup[0]} disableLinks={disableLinks} />;
+  });
+};
+
+const groupRenderSections = (elements) => {
+  const sections = [];
+  const columnStyleMap = {
+    backgroundColor: 'columnBackgroundColor',
+    padding: 'columnPadding',
+    paddingTop: 'columnPaddingTop',
+    paddingBottom: 'columnPaddingBottom',
+    paddingLeft: 'columnPaddingLeft',
+    paddingRight: 'columnPaddingRight',
+    borderWidth: 'columnBorderWidth',
+    borderColor: 'columnBorderColor',
+    borderRadius: 'columnBorderRadius',
+  };
+
+  for (let index = 0; index < elements.length; index += 1) {
+    const element = elements[index];
+    const columnName = element.styles?.column;
+
+    if (!columnName) {
+      sections.push({ type: 'elements', elements: [element] });
+      continue;
+    }
+
+    const columnElements = [];
+
+    while (index < elements.length && elements[index].styles?.column) {
+      columnElements.push(elements[index]);
+      index += 1;
+    }
+
+    index -= 1;
+
+    const columns = [];
+    const byName = new Map();
+
+    columnElements.forEach((columnElement) => {
+      const name = columnElement.styles.column;
+      if (!byName.has(name)) {
+        const columnConfig = {
+          name,
+          width: columnElement.styles.columnWidth || null,
+          styles: {
+            backgroundColor: columnElement.styles.columnBackgroundColor || null,
+            padding: columnElement.styles.columnPadding || null,
+            paddingTop: columnElement.styles.columnPaddingTop || null,
+            paddingBottom: columnElement.styles.columnPaddingBottom || null,
+            paddingLeft: columnElement.styles.columnPaddingLeft || null,
+            paddingRight: columnElement.styles.columnPaddingRight || null,
+            borderWidth: columnElement.styles.columnBorderWidth || null,
+            borderColor: columnElement.styles.columnBorderColor || null,
+            borderRadius: columnElement.styles.columnBorderRadius || null,
+          },
+          elements: [],
+        };
+        byName.set(name, columnConfig);
+        columns.push(columnConfig);
+      }
+      const columnConfig = byName.get(name);
+      if (!columnConfig.width && columnElement.styles.columnWidth) {
+        columnConfig.width = columnElement.styles.columnWidth;
+      }
+      Object.entries(columnStyleMap).forEach(([styleKey, elementKey]) => {
+        if (!columnConfig.styles[styleKey] && columnElement.styles[elementKey]) {
+          columnConfig.styles[styleKey] = columnElement.styles[elementKey];
+        }
+      });
+      columnConfig.elements.push(columnElement);
+    });
+
+    const columnGap = columnElements.find((columnElement) => columnElement.styles?.columnGap)?.styles?.columnGap || '24';
+    sections.push({ type: 'columns', columns, gap: columnGap });
+  }
+
+  const mergedSections = [];
+  sections.forEach((section) => {
+    const previousSection = mergedSections[mergedSections.length - 1];
+    if (section.type === 'elements' && previousSection?.type === 'elements') {
+      previousSection.elements.push(...section.elements);
+    } else {
+      mergedSections.push(section);
+    }
+  });
+
+  return mergedSections;
+};
+
 export const Preview = ({ parsedJson, disableLinks = false }) => {
   if (!parsedJson || !parsedJson.elements || parsedJson.elements.length === 0) {
     return (
@@ -56,52 +248,73 @@ export const Preview = ({ parsedJson, disableLinks = false }) => {
     );
   }
 
-  // 1. Group elements into lines. An element with `isInline` gets added
-  //    to the previous line's group. Otherwise, it starts a new line group.
-  const groupedLines = parsedJson.elements.reduce((acc, element) => {
-    if (element.isInline && acc.length > 0) {
-      acc[acc.length - 1].push(element);
-    } else {
-      acc.push([element]);
-    }
-    return acc;
-  }, []);
+  const pageStyle = convertToReactStyles(parsedJson.pageStyles || {});
+  const renderSections = groupRenderSections(parsedJson.elements);
+  const previewContentStyle = {
+    minHeight: '100%',
+    display: 'flex',
+    flexDirection: 'column',
+    ...pageStyle,
+  };
 
   return (
-    <div className="preview-content">
-      {groupedLines.map((lineGroup, index) => {
-        const lineLayout = lineGroup.find((element) => element.layout)?.layout || 'between';
-        const lineGap = lineGroup.find((element) => element.gap)?.gap || '0';
-        const justifyContentMap = {
-          start: 'flex-start',
-          center: 'center',
-          end: 'flex-end',
-          between: 'space-between',
-          around: 'space-around',
-        };
-
-        if (lineGroup.length > 1) {
+    <div className="preview-content" style={previewContentStyle}>
+      {renderSections.map((section, sectionIndex) => {
+        if (section.type === 'columns') {
+          const normalizedGap = /^\d+$/.test(String(section.gap)) ? `${section.gap}px` : section.gap;
+          const hasRemainingHeight = section.columns.some((column) =>
+            column.elements.some((element) => element.styles?.height === 'remaining')
+          );
           return (
             <div
-              key={index}
+              key={sectionIndex}
+              className="preview-columns"
               style={{
                 display: 'flex',
-                justifyContent: justifyContentMap[lineLayout] || 'space-between',
-                alignItems: 'baseline',
-                gap: /^\d+$/.test(String(lineGap)) ? `${lineGap}px` : lineGap,
-                flexWrap: 'wrap',
+                alignItems: 'stretch',
+                gap: normalizedGap,
+                ...(hasRemainingHeight ? { flex: 1, minHeight: 0 } : {}),
               }}
             >
-              {lineGroup.map((element, elIndex) => (
-                <ElementRenderer key={elIndex} element={element} disableLinks={disableLinks} />
-              ))}
+              {section.columns.map((column) => {
+                const width = column.width || '1fr';
+                const normalizedWidth = /^\d+$/.test(String(width)) ? `${width}px` : width;
+                const isFixedWidth = /^\d+(\.\d+)?(px)?$/.test(String(width));
+                const columnStyle = {
+                  ...(width === '1fr'
+                    ? { flex: 1, minWidth: 0 }
+                    : isFixedWidth
+                      ? { width: normalizedWidth, minWidth: 0, flexShrink: 0 }
+                      : { flexBasis: normalizedWidth, minWidth: 0, flexShrink: 1 }),
+                  display: 'flex',
+                  flexDirection: 'column',
+                  ...convertToReactStyles({
+                    backgroundColor: column.styles.backgroundColor,
+                    padding: column.styles.padding,
+                    paddingTop: column.styles.paddingTop,
+                    paddingBottom: column.styles.paddingBottom,
+                    paddingLeft: column.styles.paddingLeft,
+                    paddingRight: column.styles.paddingRight,
+                    borderWidth: column.styles.borderWidth,
+                    borderColor: column.styles.borderColor,
+                    borderRadius: column.styles.borderRadius,
+                  }),
+                };
+                return (
+                  <div key={column.name} className="preview-column" style={columnStyle}>
+                    {renderLineGroups(column.elements, disableLinks)}
+                  </div>
+                );
+              })}
             </div>
           );
         }
 
-        // 3. If it's a normal single-element line, render it directly.
-        const singleElement = lineGroup[0];
-        return <ElementRenderer key={index} element={singleElement} disableLinks={disableLinks} />;
+        return (
+          <React.Fragment key={sectionIndex}>
+            {renderLineGroups(section.elements, disableLinks)}
+          </React.Fragment>
+        );
       })}
     </div>
   );
@@ -327,7 +540,7 @@ export const Editor = ({ code, setCode }) => {
     let highlightedText = escapedText
       .replace(/"(.*?)"/g, '<span class="string">"$1"</span>') // Strings
       .replace(/\b(start|end|startFromSameLine)\b/g, '<span class="keyword-block">$1</span>') // Block keywords
-      .replace(/\b(declare|init|set|write|strong|muted|badge|design|set_url|draw|add|layout|gap|align)\b/g, '<span class="keyword-command">$1</span>')
+      .replace(/\b(declare|init|set|write|image|headline|strong|muted|badge|design|set_url|draw|add|layout|gap|align)\b/g, '<span class="keyword-command">$1</span>')
       .replace(/\$[A-Za-z_][A-Za-z0-9_]*/g, '<span class="variable-token">$&</span>');
 
     // Add extra newline at the end if the text ends with one, to keep scroll synchronized
