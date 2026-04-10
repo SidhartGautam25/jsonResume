@@ -781,9 +781,8 @@ body {
     min-height: 100vh !important;
   }
 
-  .preview-content {
-    padding: 18px !important;
-    box-sizing: border-box !important;
+  .preview-columns,
+  .preview-column {
     min-height: 100% !important;
   }
 }
