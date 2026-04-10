@@ -526,15 +526,6 @@ function EditorContent() {
           </div>
 
           <div className="panel panel-right preview-panel">
-            <div className="preview-panel-head">
-              <div>
-                <p className="eyebrow">Preview</p>
-                <h2>Ready for export</h2>
-              </div>
-              <p className="preview-panel-copy">
-                PDF uses your browser print dialog. HTML, JSON, and TXT download directly.
-              </p>
-            </div>
             <div className="paper print-paper">
               <Preview parsedJson={parsedJson} />
             </div>
