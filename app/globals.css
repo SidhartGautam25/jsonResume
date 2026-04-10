@@ -713,8 +713,18 @@ body {
 }
 
 @media print {
+  @page {
+    margin: 0;
+    size: auto;
+  }
+
+  html,
   body {
-    background: white;
+    background: white !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
 
   .navbar,
@@ -726,8 +736,7 @@ body {
   .app-root,
   .container,
   .grid,
-  .preview-panel,
-  .paper {
+  .preview-panel {
     padding: 0 !important;
     margin: 0 !important;
     height: auto !important;
@@ -738,16 +747,44 @@ body {
     background: white !important;
   }
 
+  .preview-content,
+  .preview-content *,
+  .print-paper,
+  .print-paper * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
   .grid {
     display: block !important;
   }
 
   .preview-panel {
     width: 100% !important;
+    min-height: 100vh !important;
   }
 
+  .paper,
   .print-paper {
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
     overflow: visible !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+  }
+
+  .paper,
+  .preview-content {
+    min-height: 100vh !important;
+  }
+
+  .preview-content {
+    padding: 18px !important;
+    box-sizing: border-box !important;
+    min-height: 100% !important;
   }
 }
 

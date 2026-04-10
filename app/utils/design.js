@@ -50,7 +50,10 @@ export const convertToReactStyles = (styles = {}) => {
       case 'bleed': {
         const bleedValue = Number(value);
         if (!Number.isNaN(bleedValue)) {
-          reactStyles.margin = `-${bleedValue}px`;
+          reactStyles.marginTop = `-${bleedValue}px`;
+          reactStyles.marginRight = `-${bleedValue}px`;
+          reactStyles.marginBottom = `-${bleedValue}px`;
+          reactStyles.marginLeft = `-${bleedValue}px`;
           reactStyles.width = `calc(100% + ${bleedValue * 2}px)`;
           reactStyles.minHeight = `calc(100% + ${bleedValue * 2}px)`;
         }

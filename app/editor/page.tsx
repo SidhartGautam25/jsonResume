@@ -301,6 +301,32 @@ const renderHtmlDocument = (parsedJson: ParsedResume) => {
       .preview-hanging-dot { display:inline-block; flex-shrink:0; }
       .preview-hanging-text { flex:1; min-width:0; }
       strong { font-weight: 700; }
+      @media print {
+        @page {
+          margin: 0;
+          size: auto;
+        }
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          background: white !important;
+        }
+        .page {
+          max-width: none !important;
+          margin: 0 !important;
+          padding: 28px !important;
+          box-shadow: none !important;
+          min-height: 100vh !important;
+        }
+        .preview-content {
+          min-height: 100% !important;
+          box-sizing: border-box !important;
+        }
+        html, body, .page, .preview-content, .preview-content * {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+      }
     </style>
   </head>
   <body>
