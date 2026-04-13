@@ -251,7 +251,6 @@ export const Preview = ({ parsedJson, disableLinks = false }) => {
   const pageStyle = convertToReactStyles(parsedJson.pageStyles || {});
   const renderSections = groupRenderSections(parsedJson.elements);
   const previewContentStyle = {
-    minHeight: '100%',
     display: 'flex',
     flexDirection: 'column',
     ...pageStyle,

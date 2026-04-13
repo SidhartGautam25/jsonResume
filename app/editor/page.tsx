@@ -291,7 +291,7 @@ const renderHtmlDocument = (parsedJson: ParsedResume) => {
     <style>
       body { margin: 0; padding: 32px; background: #f8fafc; font-family: Arial, sans-serif; }
       .page { max-width: 860px; margin: 0 auto; background: white; padding: 28px; box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08); }
-      .preview-content { color: #111827; font-family: Arial, sans-serif; font-size: 14px; line-height: 1.45; min-height: 100%; display: flex; flex-direction: column; }
+      .preview-content { color: #111827; font-family: Arial, sans-serif; font-size: 14px; line-height: 1.45; display: flex; flex-direction: column; }
       .preview-element .dot { margin-right: 8px; font-weight: 700; }
       .preview-muted { color: #64748b; }
       .preview-headline-inline { display:inline-block; font-family: Arial, Helvetica, sans-serif; font-size: 22px; font-weight: 700; line-height: 1.1; margin-bottom: 4px; }
