@@ -295,6 +295,58 @@ body {
   height: calc(100vh - 130px);
 }
 
+.editor-grid {
+  height: 100%;
+  flex: 1;
+  min-width: 0;
+}
+
+.editor-layout-wrapper {
+  display: flex;
+  gap: 20px;
+  height: calc(100vh - 48px);
+}
+
+.editor-sidebar {
+  width: 64px;
+  background: var(--panel-dark);
+  border-radius: 16px;
+  border: 1px solid var(--border-soft);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 24px 0;
+  gap: 20px;
+  box-shadow: 0 12px 42px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(18px);
+  flex-shrink: 0;
+}
+
+.editor-sidebar-link {
+  color: var(--muted-text);
+  padding: 12px;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.editor-sidebar-link:hover {
+  background: rgba(125, 211, 252, 0.08);
+  color: var(--code-green);
+}
+
+.editor-sidebar-link svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+
 .panel {
   display: flex;
   flex-direction: column;
@@ -731,6 +783,7 @@ body {
   }
 
   .navbar,
+  .editor-sidebar,
   .editor-panel,
   .preview-panel-head {
     display: none !important;

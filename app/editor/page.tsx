@@ -1,6 +1,7 @@
 'use client'
 import { Suspense, useEffect, useRef, useState } from "react";
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Editor, Preview } from "../comp/preview";
 import { parseCodeToJson } from '../utils/jsonParsing';
 import { templates } from '../templates/registry';
@@ -483,10 +484,18 @@ function EditorContent() {
 
   return (
     <div className="app-root">
-      <div className="container">
-        <div style={{ marginBottom: '24px' }}>
-          <SiteHeader showLaunchButton={false} />
-        </div>
+      <div className="editor-layout-wrapper">
+        <aside className="editor-sidebar">
+          <Link href="/" className="editor-sidebar-link" title="Home">
+            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+          </Link>
+          <Link href="/templates" className="editor-sidebar-link" title="Templates">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          </Link>
+          <Link href="/docs" className="editor-sidebar-link" title="Documentation">
+            <svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+          </Link>
+        </aside>
 
         <div className="grid editor-grid">
           <div className="panel panel-left editor-panel">
